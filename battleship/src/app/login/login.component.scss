@@ -1,0 +1,36 @@
+h1 {
+    text-align: center;
+}
+
+.login-wrapper {
+   margin: auto;
+   width: 350px;
+   padding: 20px;
+}
+
+button {
+    width: 100%;
+    margin-bottom: 10px;
+    background-color: #848482;
+    border-radius: 2px;
+    border-color: transparent;
+    color: #ffffff;
+    padding: 5px 0px 5px 0px
+}
+
+input {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.image-wrapper {
+    text-align: center;
+    img {
+        width: 400px;
+    }
+}
+
+.password-wrapper {
+    margin-bottom: 10px;
+}
