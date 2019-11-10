@@ -1,3 +1,4 @@
+<nav></nav>
 <div class="page-content">
     <h1>Welcome to Battleship!</h1>
     <div class="image-wrapper">
@@ -8,7 +9,7 @@
         <div *ngIf="!signup">
             <h3>Login</h3>
             <div>
-                <p>Email:</p>
+                <p>Username:</p>
                 <input id="username" type="email" [(ngModel)]="username"/>
             </div>
             <div class="password-wrapper">
@@ -16,7 +17,7 @@
                 <input id="password" type="password" [(ngModel)]="password"/>
             </div>
             <div>
-                <button (click)="login({ email: email, password: password })">Login</button>
+                <button (click)="login({ username: username, password: password })">Login</button>
                 <br />
                 <button (click)="signup = true">Sign Up</button>
             </div>
@@ -25,6 +26,10 @@
             <h3>Signup</h3>
             <div>
                 <p>Email:</p>
+                <input id="username" type="email" [(ngModel)]="emailRegister"/>
+            </div>
+            <div>
+                <p>Username:</p>
                 <input id="username" type="email" [(ngModel)]="usernameRegister"/>
             </div>
             <div class="password-wrapper">
@@ -32,7 +37,7 @@
                 <input id="password" type="password" [(ngModel)]="passwordRegister"/>
             </div>
             <div>
-                <button (click)="register({email: usernameRegister, password: passwordRegister})">Sign Up</button>
+                <button (click)="register({email: emailRegister, username: usernameRegister, password: passwordRegister})">Sign Up</button>
                 <br />
                 <button (click)="signup = false">Login</button>
             </div>

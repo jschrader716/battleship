@@ -9,9 +9,11 @@ export class CognitoService {
 
   constructor() { }
 
+  public cognitoUser:any;
+
   public poolData = {
-    UserPoolId: "us-east-2_GslHWXppq",
-    ClientId: "6gavk3tn5va320anugfrecak85"
+    UserPoolId: "us-east-2_pnodc4HoZ",
+    ClientId: "2tb0f012gjikege0qft7epn3cm"
   };
 
   /*
@@ -30,12 +32,13 @@ export class CognitoService {
       var attributeEmail = new AWSCognito.CognitoUserAttribute({
         Name: "email",
         Value: registerData.email
-      });
+      }
+      );
 
       attributeList.push(attributeEmail);
 
       userPool.signUp(
-        registerData.email,
+        registerData.username,
         registerData.password,
         attributeList,
         null,
@@ -44,11 +47,48 @@ export class CognitoService {
             reject(err);
           }
           else {
-            var cognitoUser = result.user;
-            console.log('user name is ' + cognitoUser.getUsername());
+            resolve(result);
           }
         }
       );
+    });
+  }
+
+  login(loginData: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+
+      var userPool = new AWSCognito.CognitoUserPool(this.poolData);
+
+      var authDetails = new AWSCognito.AuthenticationDetails(
+        {
+          Username: loginData.username,
+          Password: loginData.password
+        }
+      );
+
+      var userData = {
+          Username: loginData.username,
+          Pool: userPool,
+      };
+
+      this.cognitoUser = new AWSCognito.CognitoUser(userData);
+
+
+      this.cognitoUser.authenticateUser(authDetails, {
+        onSuccess: (result) => {
+          resolve(result);
+        },
+        onFailure: function(err) {
+            reject(err);
+        },
+      });
+    });
+  }
+
+  logout(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.cognitoUser.signOut();
+
     });
   }
 }

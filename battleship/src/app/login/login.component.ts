@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { CognitoService } from "../services/cognito.service";
+import { AuthService } from "../services/auth.service";
+import { AlertService } from "../services/alert.service";
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'login',
@@ -10,7 +12,7 @@ export class LoginComponent implements OnInit {
   
   public signup: boolean = false;
 
-  constructor(private cognitoService: CognitoService) {
+  constructor(private authService: AuthService, private alertService: AlertService, private router: Router) {
 
   }
 
@@ -18,12 +20,22 @@ export class LoginComponent implements OnInit {
   }
 
   login(creds) {
-    console.log(creds);
+    this.authService.login(creds).then(data => {
+      console.log(data);
+      this.router.navigate(['/lobby']);
+    })
+    .catch((error) => {
+      this.alertService.error("Error: " + error);
+    });
   }
 
   register(creds) {
-    this.cognitoService.register(creds).then((data) => {
-      console.log(data);
+    this.authService.register(creds).then((data) => {
+      this.alertService.success("Registration Successful!");
+      this.router.navigate(['/lobby']);
+    })
+    .catch((error) => {
+      this.alertService.error("Error: " + error);
     });
   }
 
