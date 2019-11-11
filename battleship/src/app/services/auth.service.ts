@@ -17,8 +17,6 @@ export class AuthService {
     return new Promise((resolve, reject) => {
       this.cognitoService.register(creds).then((data) => {
         this.isLoggedIn = true;
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("token", require('jwthelper'));
         resolve(data);
       })
       .catch((error) => {
@@ -31,8 +29,6 @@ export class AuthService {
     return new Promise((resolve, reject) => {
       this.cognitoService.login(creds).then((data) => {
         this.isLoggedIn = true;
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("token", require('jwthelper'));
         resolve(data);
       })
       .catch((error) => {
@@ -41,11 +37,34 @@ export class AuthService {
     })
   }
 
-  logout(): void {
-    this.isLoggedIn = false;
+  logout(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.cognitoService.logout().then((data) => {
+        console.log("Auth Service: " + data);
+        if(data) {
+          this.isLoggedIn = false;
+          resolve(data);
+        }
+        else {
+          resolve(data);
+        }
+      });
+    })
+
   }
 
-  isAuthenticated(): boolean {
+  isAuthenticated(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.cognitoService.isAuthenticated().then((data) => {
+        return true;
+      })
+      .catch((error) => {
+        return false;
+      });
+    })
+  }
+
+  getLoginStatus() {
     return this.isLoggedIn;
   }
 }

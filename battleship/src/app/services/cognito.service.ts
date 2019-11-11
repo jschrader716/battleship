@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import * as AWSCognito from "amazon-cognito-identity-js";
-import * as AWS from "aws-sdk";
 
 @Injectable({
   providedIn: 'root'
@@ -72,8 +71,6 @@ export class CognitoService {
       };
 
       this.cognitoUser = new AWSCognito.CognitoUser(userData);
-
-
       this.cognitoUser.authenticateUser(authDetails, {
         onSuccess: (result) => {
           resolve(result);
@@ -87,8 +84,46 @@ export class CognitoService {
 
   logout(): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.cognitoUser.signOut();
+      let cognitoUser = new AWSCognito.CognitoUserPool(this.poolData).getCurrentUser();
 
+      cognitoUser.getSession((err, session) => {
+        if (err) {
+          reject(err);
+        } 
+        else {
+          if(session.isValid()) {
+            cognitoUser.signOut();
+            resolve(true);
+          }
+          else {
+            resolve(false);
+          }
+        }
+      })
+
+      return true;
+    });
+  }
+
+  isAuthenticated(): Promise<boolean> {
+    let cognitoUser = new AWSCognito.CognitoUserPool(this.poolData).getCurrentUser();
+    let userAuth = false;
+
+    return new Promise(function(resolve, reject) {
+      if (cognitoUser != null) {
+        return cognitoUser.getSession(function(err, session) {
+          if (err) {
+            userAuth = false;
+          } else {
+            userAuth = session.isValid();
+          }
+
+          resolve(userAuth);
+        });
+      } else {
+        userAuth = false;
+        resolve(userAuth);
+      }
     });
   }
 }

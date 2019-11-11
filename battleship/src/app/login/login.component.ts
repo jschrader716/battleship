@@ -20,8 +20,7 @@ export class LoginComponent implements OnInit {
   }
 
   login(creds) {
-    this.authService.login(creds).then(data => {
-      console.log(data);
+    this.authService.login(creds).then((data) => {
       this.router.navigate(['/lobby']);
     })
     .catch((error) => {
