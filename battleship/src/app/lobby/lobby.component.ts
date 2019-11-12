@@ -13,12 +13,14 @@ export class LobbyComponent implements OnInit {
   constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit() {
-    if(this.authService.isAuthenticated()) {
-      return;
-    }
-    else {
-      this.router.navigate(['/login']);
-    }
+    this.authService.isAuthenticated().then((data) => {
+      if(data == true) {
+        return;
+      }
+      else {
+        this.router.navigate(['/login']);
+      }
+    });
   }
 
   logout() {

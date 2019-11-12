@@ -1,0 +1,54 @@
+#background { 
+    fill: #aaa; 
+    stroke: black; 
+    stroke-width: 2px; 
+}
+
+.game-board-wrapper {
+    position:absolute;
+    left:40px;
+    top:40px;
+}
+
+.player0   {
+    fill: #990000;
+    stroke: white; 
+    stroke-width: 1px; 
+    cursor:pointer; 
+}
+
+.player1 {
+    fill: green; 
+    stroke: white; 
+    stroke-width: 1px;
+    cursor:pointer; 
+}
+
+.htmlBlock {
+    position:absolute;
+    top:200px;
+    left:300px;
+    width:200px;
+    height:100px;
+    background:#ffc;
+    padding:10px;
+}
+
+body{
+    padding:0px;
+    margin:0px;
+}
+.cell_white { 
+    fill:white;
+    stroke:red;
+    stroke-width:2px;
+}
+.cell_black { 
+    fill:black;
+    stroke:red;
+    stroke-width:2px;
+}
+text{
+    pointer-events:none;
+    user-select:none;
+}

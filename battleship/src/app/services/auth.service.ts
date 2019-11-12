@@ -40,7 +40,6 @@ export class AuthService {
   logout(): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.cognitoService.logout().then((data) => {
-        console.log("Auth Service: " + data);
         if(data) {
           this.isLoggedIn = false;
           resolve(data);
@@ -56,10 +55,15 @@ export class AuthService {
   isAuthenticated(): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.cognitoService.isAuthenticated().then((data) => {
-        return true;
+        if(data == true) {
+          resolve(true);
+        }
+        else {
+          resolve(false);
+        }
       })
       .catch((error) => {
-        return false;
+        reject(false);
       });
     })
   }

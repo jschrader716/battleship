@@ -13,18 +13,23 @@ import { JwtHelperService } from '@auth0/angular-jwt';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { LobbyComponent } from './lobby/lobby.component';
+import { GameboardComponent } from './gameboard/gameboard.component';
+import { CellComponent } from './cell/cell.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'lobby', component: LobbyComponent, canActivate: [AuthGuard] }
+  { path: 'lobby', component: LobbyComponent, canActivate: [AuthGuard] },
+  { path: 'game', component: GameboardComponent, canActivate: [AuthGuard] }
 ]
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
-    LobbyComponent
+    LobbyComponent,
+    GameboardComponent,
+    CellComponent
   ],
   imports: [
     BrowserModule,
