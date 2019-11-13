@@ -1,18 +1,17 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { Injectable } from '@angular/core';
 
 @Component({
-  selector: 'cell',
+  selector: 'app-cell',
   templateUrl: './cell.component.html',
   styleUrls: ['./cell.component.scss']
 })
 
 export class CellComponent implements OnInit {
 
-  @Input() size: number;
-  @Input() row: number;
-  @Input() col: number;
-  @Input() id: string;
+  public size: number = 10;
+  public row: number = 0;
+  public col: number = 0;
+  public id: string = "";
   public parent;
   public y;
   public x;

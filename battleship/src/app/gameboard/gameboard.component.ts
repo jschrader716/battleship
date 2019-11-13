@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { GameInfo } from '../models/gameinfo';
-import { CellComponent } from '../cell/cell.component';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { DataService } from '../services/data.service';
+import { BoardState } from '../models/boardstate';
 
 @Component({
   selector: 'app-gameboard',
@@ -11,8 +12,9 @@ import { Router } from '@angular/router';
 })
 export class GameboardComponent implements OnInit {
 
+    public gameInfo: GameInfo = new GameInfo();
     public rows: number;
-    public cols: number;
+    public cols: number = 10;
     public xhtmlns: string;
     public svgns: string;
     public boardX: number;
@@ -20,15 +22,20 @@ export class GameboardComponent implements OnInit {
     public boardArr: Array<any>;
     public cellsize: number;
     private gameId: string = '';
+    public boardState: BoardState;
+    
 
-  constructor(private gameInfo: GameInfo, private authService: AuthService, private router: Router) { 
-    this.rows = gameInfo.rows;
-    this.cols = gameInfo.cols;
-    this.svgns = gameInfo.svgns;
-    this.boardX = gameInfo.boardX;
-    this.boardY = gameInfo.boardY;
-    this.boardArr = gameInfo.boardArr;
-    this.cellsize = gameInfo.cellsize;
+
+  constructor(private authService: AuthService, private router: Router, private dataService: DataService) { 
+    this.rows = this.gameInfo.rows;
+    this.cols = this.gameInfo.cols;
+    this.svgns = this.gameInfo.svgns;
+    this.boardX = this.gameInfo.boardX;
+    this.boardY = this.gameInfo.boardY;
+    this.boardArr = this.gameInfo.boardArr;
+    this.cellsize = this.gameInfo.cellsize;
+    this.boardState = dataService.getBoardState();
+    console.log(this.boardState.board_state_1_obj);
     this.boardSetup();
   }
 
@@ -47,7 +54,8 @@ export class GameboardComponent implements OnInit {
     //create a parent to stick board in...
     var game = document.createElementNS(this.svgns,'board');
     game.setAttributeNS(null,'transform','translate('+ this.boardX + ',' + this.boardY + ')');
-    game.setAttributeNS(null,'id','gId_' + this.gameId);
+    game.setAttributeNS(null,'id','gId_' + this.gameId);    
+    
     //stick g on board
     //document.getElementsByTagName('svg')[0].insertBefore(game, document.getElementsByTagName('svg')[0]);
   

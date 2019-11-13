@@ -1,16 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
     <title>BATTLESHIP</title>
     </head>
-    <body onload="init()">
+    <body>
         <div class="game-board-wrapper">
             <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="900px" height="900px">
                 <rect x="0px" y="0px" width="100%" height="100%" id="background"></rect>
-                <rect *ngFor="let row of rows; let i = index">
-                    <cell [id]="" [row]="" [col]="" [size]=""></cell>
+                <!-- <ng-container *ngFor="let row of rows; let i = index"> -->
+                <rect *ngFor="let cell of cellCollection"
+                    [attr.width]= "75"
+                    [attr.height]="75" 
+                    [attr.x]="x" 
+                    [attr.y] ="y" 
+                    [attr.class]="cell" 
+                    [attr.id]="" 
+                    (click)="console.log('hi')">
                 </rect>
+                <!-- </ng-container> -->
                 <text x="20px" y="20px" id="youPlayer" fill="orange">
                     You are red:
                 </text>
