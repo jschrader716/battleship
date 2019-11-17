@@ -1,7 +1,19 @@
+.game-board-wrapper {
+    width: 75%;
+    height: 100%;
+
+    svg {
+        margin: auto;
+        display: block;
+    }
+}
+
+
+
 #background { 
-    fill: #aaa; 
     stroke: black; 
-    stroke-width: 2px; 
+    stroke-width: 5px; 
+    background-image: url("../../assets/images/ocean.jpg");
 }
 
 .game-board-wrapper {

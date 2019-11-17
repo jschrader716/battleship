@@ -15,12 +15,14 @@ import { LoginComponent } from './login/login.component';
 import { LobbyComponent } from './lobby/lobby.component';
 import { GameboardComponent } from './gameboard/gameboard.component';
 import { CellComponent } from './cell/cell.component';
+import { ChatComponent } from './chat/chat.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'lobby', component: LobbyComponent, canActivate: [AuthGuard] },
-  { path: 'game', component: GameboardComponent, canActivate: [AuthGuard] }
+  { path: 'game', component: GameboardComponent, canActivate: [AuthGuard] },
+  { path: 'chat', component: ChatComponent }
 ]
 
 @NgModule({
@@ -29,7 +31,8 @@ const routes: Routes = [
     LoginComponent,
     LobbyComponent,
     GameboardComponent,
-    CellComponent
+    CellComponent,
+    ChatComponent
   ],
   imports: [
     BrowserModule,
