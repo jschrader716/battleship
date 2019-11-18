@@ -5,6 +5,7 @@ import { NgModule } from '@angular/core';
 
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './auth/auth.guard';
+import { HttpClientModule } from '@angular/common/http';
 
 // services
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -37,6 +38,7 @@ const routes: Routes = [
   imports: [
     BrowserModule,
     FormsModule,
+    HttpClientModule,
     RouterModule.forRoot(
       routes
     )

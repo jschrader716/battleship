@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { BoardState } from '../models/boardstate';
+import { HttpClient } from '@angular/common/http'
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
   getBoardState() {
     let boardstate = new BoardState({
@@ -28,5 +30,9 @@ export class DataService {
 
   getTurn() {
 
+  }
+
+  getAllMessages(): Observable<any> {
+    return this.http.get("www.something.com"); // this will be replaced with the API url
   }
 }

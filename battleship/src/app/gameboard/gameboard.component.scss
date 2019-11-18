@@ -1,66 +1,77 @@
-.game-board-wrapper {
-    width: 75%;
-    height: 100%;
+.page-content {
 
-    svg {
-        margin: auto;
-        display: block;
+    .game-board-wrapper {
+        width: 60%;
+        height: 100%;
+        position: static !important;
+        display: inline-block;
+    
+        svg {
+            display: block;
+            margin-left: auto;
+            padding-right: 30px;
+        }
     }
-}
-
-
-
-#background { 
-    stroke: black; 
-    stroke-width: 5px; 
-    background-image: url("../../assets/images/ocean.jpg");
-}
-
-.game-board-wrapper {
-    position:absolute;
-    left:40px;
-    top:40px;
-}
-
-.player0   {
-    fill: #990000;
-    stroke: white; 
-    stroke-width: 1px; 
-    cursor:pointer; 
-}
-
-.player1 {
-    fill: green; 
-    stroke: white; 
-    stroke-width: 1px;
-    cursor:pointer; 
-}
-
-.htmlBlock {
-    position:absolute;
-    top:200px;
-    left:300px;
-    width:200px;
-    height:100px;
-    background:#ffc;
-    padding:10px;
-}
-
-body{
-    padding:0px;
-    margin:0px;
-}
-.cell_white { 
-    fill:white;
-    stroke:red;
-    stroke-width:2px;
-}
-.cell_black { 
-    fill:black;
-    stroke:red;
-    stroke-width:2px;
-}
-text{
-    pointer-events:none;
-    user-select:none;
+    
+    .chat-wrapper {
+        width: 40%;
+        height: 100%;
+        display: inline-block;
+        position: absolute;
+    }
+    
+    #background { 
+        stroke: black; 
+        stroke-width: 5px; 
+        background-image: url("../../assets/images/ocean.jpg");
+    }
+    
+    .game-board-wrapper {
+        position:absolute;
+        left:40px;
+        top:40px;
+    }
+    
+    .player0   {
+        fill: #990000;
+        stroke: white; 
+        stroke-width: 1px; 
+        cursor:pointer; 
+    }
+    
+    .player1 {
+        fill: green; 
+        stroke: white; 
+        stroke-width: 1px;
+        cursor:pointer; 
+    }
+    
+    .htmlBlock {
+        position:absolute;
+        top:200px;
+        left:300px;
+        width:200px;
+        height:100px;
+        background:#ffc;
+        padding:10px;
+    }
+    
+    body{
+        padding:0px;
+        margin:0px;
+    }
+    .cell_white { 
+        fill:white;
+        stroke:red;
+        stroke-width:2px;
+    }
+    .cell_black { 
+        fill:black;
+        stroke:red;
+        stroke-width:2px;
+    }
+    text{
+        pointer-events:none;
+        user-select:none;
+    }
 }
