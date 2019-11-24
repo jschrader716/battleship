@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: "",
-  region: "",  
+  apiUrl: "https://eedlv5uqhi.execute-api.us-east-2.amazonaws.com/battleship",
+  region: "us-east-2",  
 };
 
 /*

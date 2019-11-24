@@ -126,4 +126,11 @@ export class CognitoService {
       }
     });
   }
+
+  getCurrentUser(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let cognitoUser = new AWSCognito.CognitoUserPool(this.poolData).getCurrentUser();
+      resolve(cognitoUser);
+    })
+  }
 }

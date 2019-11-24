@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { AlertService } from '../services/alert.service'
+import { CognitoService } from '../services/cognito.service';
 
 @Component({
   selector: 'app-chat',
@@ -9,26 +10,37 @@ import { AlertService } from '../services/alert.service'
 })
 export class ChatComponent implements OnInit {
 
-  constructor(private dataService: DataService, private alertService: AlertService) { }
+  public messages: [] = [];
+
+  constructor(private dataService: DataService, private alertService: AlertService, private cognitoService: CognitoService) { }
 
   ngOnInit() {
+    this.getAllMessages();
   }
 
-  sendMsg(msg) {
-    if(msg.keyCode == 13) {
-      let msg = (<HTMLInputElement>document.getElementById('chatMsg')).value;
-      console.log(msg);
-      //clear message
-      (<HTMLInputElement>document.getElementById('chatMsg')).value = '';
+  sendMsg(key) {
+    if(key.keyCode == 13 && key != '') {
+      this.cognitoService.getCurrentUser().then((user) => {
+        var message = (<HTMLInputElement>document.getElementById('chatMsg')).value;
+  
+        var data = {
+          username: user.username,
+          game_id: 0,
+          message: message
+        }
+  
+        this.dataService.sendMessage(data);
+        //clear message
+        (<HTMLInputElement>document.getElementById('chatMsg')).value = '';
+      });
     }
   }
 
   getAllMessages() {
-    this.dataService.getAllMessages().subscribe((data) => {
-      console.log(data);
-    },
-    (error) => {
-      this.alertService.error("Something went terribly wrong...send help..." + error);
-    });
+    //setInterval(() => { 
+      this.dataService.getAllMessages().then((data) => {
+        console.log(data);
+      });
+    //}, 3000);
   }
 }
