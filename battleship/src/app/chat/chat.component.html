@@ -1,7 +1,18 @@
 <div class="chat-wrapper-comp">
-    <textarea></textarea>
-    <form (keydown)="sendMsg($event)">
-        <input type="text" id="chatMsg" #msg placeholder="Type a message. Hit Enter to send"/>
-    </form>
+        <textarea id="chat-area" #chatArea></textarea>
+        <form (keydown)="sendMsg($event)">
+            <input type="text" id="chatMsg" #msg placeholder="Type a message... Hit Enter to send"/>
+        </form>
 </div>
+<div class="user-list-wrapper">
+    <div class="user-list-header">
+        <h2>Player List</h2>
+    </div>
+    <div *ngIf="users?.length > 0" class="user-list">
+        <div class="player" (click)="challenge()" *ngFor="let user of users; let i = index">{{ user.username }}</div>
+    </div>
+</div>
+
+
+
 

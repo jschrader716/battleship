@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { AlertService } from '../services/alert.service'
 import { CognitoService } from '../services/cognito.service';
+import { Message } from '../models/message'
+import { element } from 'protractor';
 
 @Component({
   selector: 'app-chat',
@@ -10,7 +12,8 @@ import { CognitoService } from '../services/cognito.service';
 })
 export class ChatComponent implements OnInit {
 
-  public messages: [] = [];
+  public messages: Message[] = [];
+  public users: string[] = [];
 
   constructor(private dataService: DataService, private alertService: AlertService, private cognitoService: CognitoService) { }
 
@@ -37,10 +40,28 @@ export class ChatComponent implements OnInit {
   }
 
   getAllMessages() {
-    //setInterval(() => { 
+    // setInterval(() => { 
+      this.messages = [];
+      var chatString = "";
       this.dataService.getAllMessages().then((data) => {
-        console.log(data);
+        this.messages = data;
+        this.messages.forEach(element => {
+          chatString += element.username + ': ' + element.message + '\n'; 
+          document.getElementById('chat-area').innerHTML = chatString;
+          document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
+        });
+        this.buildUserList(0);
       });
-    //}, 3000);
+    // }, 2000);
+  }
+
+  buildUserList(gameroom_id) {
+    this.dataService.getActiveUsers(0).then((data) => {
+      this.users = data;
+    });
+  }
+
+  challenge() {
+    this.alertService.success("A challenger approaches!");
   }
 }

@@ -47,13 +47,26 @@ export class DataService {
       this.http.get(this.environment.apiUrl + '/chat').subscribe((data) => {
         resolve(data);
       });
-      resolve(true);
     });
   }
 
   sendMessage(data) {
-    return this.http.post(this.environment.apiUrl + '/chat', data, httpOptions).subscribe((data) => {
-      console.log(data);
+    return this.http.post(this.environment.apiUrl + '/chat', data, httpOptions).subscribe((data) => {});
+  }
+
+  getActiveUsers(gameroom_id): Promise<any> {
+    return new Promise((resolve) => {
+      this.http.get(this.environment.apiUrl + '/user', { params: { game_id: gameroom_id } }).subscribe((data) => {
+        resolve(data);
+      });
+    });
+  }
+
+  updateUser(body): Promise<any> {
+    return new Promise((resolve) => {
+      this.http.put(this.environment.apiUrl + '/user', body, httpOptions).subscribe((data) => {
+        resolve(data);
+      });
     });
   }
 }

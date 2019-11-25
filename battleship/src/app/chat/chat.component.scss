@@ -1,13 +1,64 @@
 .chat-wrapper-comp {
-    margin: auto;
-    width: 100%;
+    width: 40%;
     height: 100%;
+    display: inline-block;
+    margin-right: 20px;
+
     textarea {
-        width: 50%;
+        width: 100%;
         height: 80%;
+        border-radius: 2px;
+        border: 1px solid #3E0901;
+        font-size: 14px;
     }
     
-    input {
-        width: 50%;
+    form {
+        text-align: left;
+        
+        input {
+            width: 100%;
+        }
+    } 
+}
+
+.user-list-wrapper {
+    background-color: #55697a;
+    padding: 10px 20px 10px 20px;
+    position: absolute;
+    display: inline-block;
+    width: 15%;
+    text-align: left;
+    min-height: 300px;
+    border-radius: 2px;
+    border: 1px solid #3E0901;
+
+    h2 {
+        margin: 0;
+        color: #ffffff;
+        margin-bottom: 10px;
+    }
+
+    .user-list {
+        font-weight: bold;
+        .player {
+            padding: 3px 5px 3px 5px;
+        }
+
+        .player:nth-child(odd) {
+            background-color: #cccccc;
+            color: #3E0901;
+        }
+        .player:nth-child(even) {
+            background-color: #ffffff;
+            color: #3E0901;
+        }
+    
+        .player:first-child {
+            border-radius: 2px 2px 0px 0px;
+        }
+    
+        .player:last-child {
+            border-radius: 0px 0px 2px 2px;
+        }
     }
 }
