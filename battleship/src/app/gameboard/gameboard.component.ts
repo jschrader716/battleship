@@ -35,7 +35,7 @@ export class GameboardComponent implements OnInit {
     this.boardY = this.gameInfo.boardY;
     this.boardArr = this.gameInfo.boardArr;
     this.cellsize = this.gameInfo.cellsize;
-    this.boardState = dataService.getBoardState();
+    //this.boardState = dataService.getBoardState();
     console.log(this.boardState.board_state_1_obj);
   }
 

@@ -19,18 +19,29 @@ export class DataService {
 
   constructor(private http: HttpClient) { }
 
+
+  //=============================================================================================================
+  // GAME BOARD API FUNCTIONS
+  //=============================================================================================================
   getBoardState() {
-    let boardstate = new BoardState({
-      // pass in key value pairs as they coming from the daaaaaatabase betch
-      id: 0,
-      board_state_1: "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      board_state_2: "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      turn: 0,
-      max_turn: 0,
-      game_terminated: false,
+    return new Promise((resolve) => {
+      this.http.get(this.environment.apiUrl + '/game/board').subscribe((data) => {
+        console.log(data);
+        resolve(data);
+      });
     });
 
-    return boardstate;
+    // let boardstate = new BoardState({
+    //   // pass in key value pairs as they coming from the daaaaaatabase betch
+    //   id: 0,
+    //   board_state_1: "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    //   board_state_2: "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    //   turn: 0,
+    //   max_turn: 0,
+    //   game_terminated: false,
+    // });
+
+    // return boardstate;
   }
 
   createBoard() {
@@ -49,9 +60,14 @@ export class DataService {
 
   }
 
-  getAllMessages(): Promise<any> {
+
+  //=============================================================================================================
+  // CHAT API FUNCTIONS
+  //=============================================================================================================
+
+  getAllMessages(username): Promise<any> {
     return new Promise((resolve) => {
-      this.http.get(this.environment.apiUrl + '/chat').subscribe((data) => {
+      this.http.get(this.environment.apiUrl + '/chat', { params: { username: username } }).subscribe((data) => {
         resolve(data);
       });
     });
@@ -61,9 +77,14 @@ export class DataService {
     return this.http.post(this.environment.apiUrl + '/chat', data, httpOptions).subscribe((data) => {});
   }
 
-  getActiveUsers(gameroom_id): Promise<any> {
+
+  //=============================================================================================================
+  // USER API FUNCTIONS
+  //=============================================================================================================
+
+  getActiveUsers(gameroomId): Promise<any> {
     return new Promise((resolve) => {
-      this.http.get(this.environment.apiUrl + '/user', { params: { game_id: gameroom_id } }).subscribe((data) => {
+      this.http.get(this.environment.apiUrl + '/user', { params: { game_id: gameroomId } }).subscribe((data) => {
         resolve(data);
       });
     });
@@ -72,6 +93,14 @@ export class DataService {
   updateUser(body): Promise<any> {
     return new Promise((resolve) => {
       this.http.put(this.environment.apiUrl + '/user', body, httpOptions).subscribe((data) => {
+        resolve(data);
+      });
+    });
+  }
+
+  getUser(username): Promise<any> {
+    return new Promise((resolve) => {
+      this.http.get(this.environment.apiUrl + '/user', { params: { username: username } }).subscribe((data) => {
         resolve(data);
       });
     });

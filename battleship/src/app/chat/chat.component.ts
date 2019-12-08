@@ -40,23 +40,39 @@ export class ChatComponent implements OnInit {
   }
 
   getAllMessages() {
-    // setInterval(() => { 
-      this.messages = [];
-      var chatString = "";
-      this.dataService.getAllMessages().then((data) => {
-        this.messages = data;
-        this.messages.forEach(element => {
-          chatString += element.username + ': ' + element.message + '\n'; 
-          document.getElementById('chat-area').innerHTML = chatString;
-          document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
-        });
-        this.buildUserList(0);
+      let game_id: number;
+      this.cognitoService.getCurrentUser().then((user) => {
+
+        this.dataService.getUser(user.username).then((userData) => {
+          game_id = userData.gameroom_id;
+        })
+        .catch((err) => {
+          console.log("Error when grabbing user info in chat");
+        })
+
+        // setInterval(() => { 
+          this.messages = [];
+          var chatString = "";
+          
+          this.dataService.getAllMessages(user.username).then((data) => {
+            this.messages = data;
+            this.messages.forEach(element => {
+              chatString += element.username + ': ' + element.message + '\n'; 
+              document.getElementById('chat-area').innerHTML = chatString;
+              document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
+            });
+            this.buildUserList(game_id);
+          });
+        // }, 2000);
+
+      })
+      .catch((err) => {
+        console.log("Failure in chat component while attempting to retrieve messages.");
       });
-    // }, 2000);
   }
 
   buildUserList(gameroom_id) {
-    this.dataService.getActiveUsers(0).then((data) => {
+    this.dataService.getActiveUsers(gameroom_id).then((data) => {
       this.users = data;
     });
   }
