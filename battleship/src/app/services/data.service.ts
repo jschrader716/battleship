@@ -44,11 +44,20 @@ export class DataService {
     // return boardstate;
   }
 
+  createGame(gameData): Promise<any> {
+    return new Promise((resolve) => {
+      resolve(this.http.post(this.environment.apiUrl + '/game/', gameData, httpOptions));
+    })
+    .catch((err) => {
+      console.log("Something went wrong when creating the game");
+    })
+  }
+
   createBoard() {
     return this.http.post(this.environment.apiUrl + '/game/board', httpOptions).subscribe((data) => {});
   }
 
-  updateBoardState(body) {
+  updateBoardState(body): Promise<any> {
     return new Promise((resolve) => {
       this.http.put(this.environment.apiUrl + '/game/board', body, httpOptions).subscribe((data) => {
         resolve(data);
