@@ -7,7 +7,6 @@ import { environment } from '../../environments/environment';
 const httpOptions = {
   headers: new HttpHeaders({
     'Content-Type':  'application/json'
-    //'Authorization': 'my-auth-token'
   })
 };
 
@@ -34,8 +33,16 @@ export class DataService {
     return boardstate;
   }
 
-  updateBoardState() {
-    // update this crap
+  createBoard() {
+    return this.http.post(this.environment.apiUrl + '/game/board', httpOptions).subscribe((data) => {});
+  }
+
+  updateBoardState(body) {
+    return new Promise((resolve) => {
+      this.http.put(this.environment.apiUrl + '/game/board', body, httpOptions).subscribe((data) => {
+        resolve(data);
+      });
+    });
   }
 
   getTurn() {

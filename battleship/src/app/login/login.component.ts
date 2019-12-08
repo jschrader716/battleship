@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from "../services/auth.service";
 import { AlertService } from "../services/alert.service";
 import { Router } from '@angular/router';
+import { DataService } from '../services/data.service';
 
 @Component({
   selector: 'login',
@@ -12,7 +13,7 @@ export class LoginComponent implements OnInit {
   
   public signup: boolean = false;
 
-  constructor(private authService: AuthService, private alertService: AlertService, private router: Router) {
+  constructor(private authService: AuthService, private alertService: AlertService, private router: Router, private dataService: DataService) {
 
   }
 
@@ -21,10 +22,21 @@ export class LoginComponent implements OnInit {
 
   login(creds) {
     this.authService.login(creds).then((data) => {
-      this.router.navigate(['/lobby']);
+
+      var user = {
+        username: data.accessToken.payload.username,
+        login: true,
+        wins: 0,
+        losses: 0,
+        gameroom_id: 0
+      }
+
+      this.dataService.updateUser(user).then((data) => {
+        this.router.navigate(['/lobby']);
+      })
     })
     .catch((error) => {
-      this.alertService.error("Error: " + error);
+      this.alertService.error("Error: " + error.message);
     });
   }
 
@@ -34,7 +46,7 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/lobby']);
     })
     .catch((error) => {
-      this.alertService.error("Error: " + error);
+      this.alertService.error("Error: " + error.message);
     });
   }
 

@@ -27,10 +27,18 @@ export class LobbyComponent implements OnInit {
 
   logout() {
     var user = this.cognitoService.getCurrentUser().then((data) => {
-      console.log(data.username);
-      this.dataService.updateUser(data.username).then((data) => {
+      console.log(data);
+
+      var logoutData = {
+        username: data.username,
+        login: false,
+        wins: 0,
+        losses: 0,
+        gameroom_id: null
+      }
+      console.log(logoutData);
+      this.dataService.updateUser(logoutData).then((data) => {
         this.authService.logout().then((data) => {
-          console.log(data);
           this.router.navigate(['/login']);
         })
         .catch((err) => {
