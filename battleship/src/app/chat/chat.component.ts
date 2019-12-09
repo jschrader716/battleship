@@ -79,16 +79,16 @@ export class ChatComponent implements OnInit {
 
   challenge(user) {
     var curUser = this.cognitoService.getCurrentUser().then((userData) => {
-      if(user.username != userData.username) {
+      // if(user.username != userData.username) {
         this.alertService.success("A challenger approaches!");
 
         var gameData = {
           player_1: user.username, // challenger
           player_2: userData.username // challangee
         }
-        this.dataService.createGame(gameData)
+        this.dataService.createGame(gameData);
         // create game with null board type and wait upon a response from challenger
-      }
+      // }
     });
   }
 }
