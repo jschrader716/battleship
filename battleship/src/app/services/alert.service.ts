@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import swal from 'sweetalert2';
+import { resolve } from 'url';
 
 @Injectable({
   providedIn: 'root'
@@ -15,5 +16,64 @@ export class AlertService {
 
   success(successMsg) {
     this.swal.fire(successMsg);
+  }
+
+  challengeAlert(username) {
+    return new Promise((resolve) => {
+      const swalChallenge = swal.mixin({
+        customClass: {
+          confirmButton: 'btn btn-success',
+          cancelButton: 'btn btn-danger'
+        },
+        buttonsStyling: false
+      })
+  
+      swalChallenge.fire(
+        {
+          title: 'A challenger approaches!',
+          html: "<b>" + username + "</b> wants to play a game.<br/>Do you wish to accept this challenge?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Accept',
+          cancelButtonText: 'Decline',
+          reverseButtons: true,
+          position: 'bottom-end',
+        }
+      )
+      .then((result) => {
+  
+        if (result.value) {
+          swalChallenge.fire(
+            {
+              title: 'Challenge Accepted!',
+              toast: true,
+              icon: 'success',
+              timer: 2000,
+              timerProgressBar: true,
+              showConfirmButton: false,
+              position: 'bottom-end'
+            }
+          )
+          resolve(result.value);
+        } 
+        else {
+          swalChallenge.fire(
+            {
+              title: 'Challenge Declined',
+              toast: true,
+              icon: 'error',
+              timer: 2000,
+              timerProgressBar: true,
+              showConfirmButton: false,
+              position: 'bottom-end'
+            }
+          )
+          resolve(false);
+        }
+      })
+    })
+    .catch((err) => {
+      console.log("Error occured with challenge modal", err);
+    })
   }
 }

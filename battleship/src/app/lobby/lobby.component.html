@@ -1,6 +1,6 @@
 <button (click)="logout()">Logout</button>
 <div class="page-content">
     <h1>Battleship (Main Lobby)</h1>
-    <app-chat></app-chat>
+    <app-chat (challengeOpponent)=requestChallenge($event)></app-chat>
 </div>
 

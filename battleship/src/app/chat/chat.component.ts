@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { AlertService } from '../services/alert.service'
 import { CognitoService } from '../services/cognito.service';
@@ -14,6 +14,8 @@ export class ChatComponent implements OnInit {
 
   public messages: Message[] = [];
   public users: string[] = [];
+
+  @Output() challengeOpponent = new EventEmitter();
 
   constructor(private dataService: DataService, private alertService: AlertService, private cognitoService: CognitoService) { }
 
@@ -80,14 +82,13 @@ export class ChatComponent implements OnInit {
   challenge(user) {
     var curUser = this.cognitoService.getCurrentUser().then((userData) => {
       // if(user.username != userData.username) {
-        this.alertService.success("A challenger approaches!");
 
-        var gameData = {
-          player_1: user.username, // challenger
-          player_2: userData.username // challangee
+        let gameData = {
+          player_1: user.username, // challengee
+          player_2: userData.username // challanger
         }
-        this.dataService.createGame(gameData);
-        // create game with null board type and wait upon a response from challenger
+
+        this.challengeOpponent.emit(gameData);
       // }
     });
   }
