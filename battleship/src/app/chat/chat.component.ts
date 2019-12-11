@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { AlertService } from '../services/alert.service'
 import { CognitoService } from '../services/cognito.service';
@@ -14,6 +14,7 @@ export class ChatComponent implements OnInit {
 
   public messages: Message[] = [];
   public users: string[] = [];
+  private messengerHeartbeat;
 
   @Output() challengeOpponent = new EventEmitter();
 
@@ -27,17 +28,29 @@ export class ChatComponent implements OnInit {
     if(key.keyCode == 13 && key != '') {
       this.cognitoService.getCurrentUser().then((user) => {
         var message = (<HTMLInputElement>document.getElementById('chatMsg')).value;
-  
-        var data = {
-          username: user.username,
-          game_id: 0,
-          message: message
-        }
-  
-        this.dataService.sendMessage(data);
-        //clear message
-        (<HTMLInputElement>document.getElementById('chatMsg')).value = '';
+
+        this.dataService.getUser(user.username).then((userData) => {
+          console.log(userData);
+          var data = {
+            username: user.username,
+            game_id: userData[0].gameroom_id,
+            message: message
+          }
+    
+          this.dataService.sendMessage(data);
+          //clear message
+          (<HTMLInputElement>document.getElementById('chatMsg')).value = '';
+        })
+        .catch((err) => {
+          console.log("Something went wrong when sending messages: ", err);
+        });
       });
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.messengerHeartbeat) {
+      clearInterval(this.messengerHeartbeat);
     }
   }
 
@@ -46,13 +59,13 @@ export class ChatComponent implements OnInit {
       this.cognitoService.getCurrentUser().then((user) => {
 
         this.dataService.getUser(user.username).then((userData) => {
-          game_id = userData.gameroom_id;
+          game_id = userData[0].gameroom_id;
         })
         .catch((err) => {
           console.log("Error when grabbing user info in chat");
         })
 
-        // setInterval(() => { 
+        this.messengerHeartbeat = setInterval(() => { 
           this.messages = [];
           var chatString = "";
           
@@ -65,7 +78,7 @@ export class ChatComponent implements OnInit {
             });
             this.buildUserList(game_id);
           });
-        // }, 2000);
+        }, 2000);
 
       })
       .catch((err) => {

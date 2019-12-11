@@ -1,5 +1,5 @@
 <div class="chat-wrapper-comp">
-        <textarea id="chat-area" #chatArea></textarea>
+        <textarea id="chat-area" readonly tabIndex="-1" #chatArea></textarea>
         <form (keydown)="sendMsg($event)">
             <input type="text" id="chatMsg" #msg placeholder="Type a message... Hit Enter to send"/>
         </form>

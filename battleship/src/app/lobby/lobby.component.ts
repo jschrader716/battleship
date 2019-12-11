@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
@@ -16,6 +16,7 @@ export class LobbyComponent implements OnInit {
 
   public user: string; 
   private challengers: ChallengeRecord[] = [];
+  private challengerHeartbeat;
 
   constructor(
     private authService: AuthService, 
@@ -37,12 +38,18 @@ export class LobbyComponent implements OnInit {
     });
 
     this.cognitoService.getCurrentUser().then((data) => {
-      this.user  = data.username;
+      this.user = data.username;
 
-      // setInterval(() => {
+      this.challengerHeartbeat = setInterval(() => {
       this.checkChallenges();
-      // }, 5000);
+      }, 5000);
     });
+  }
+
+  ngOnDestroy() {
+    if (this.challengerHeartbeat) {
+      clearInterval(this.challengerHeartbeat);
+    }
   }
 
   logout() {
@@ -95,9 +102,8 @@ export class LobbyComponent implements OnInit {
 
       this.challengers.forEach(element => {
         this.alertService.challengeAlert(element.player_2).then((decision) => {
-          console.log(decision);
           if(decision === true) {
-            this.acceptChallenge();
+            this.acceptChallenge(element);
           }
           else {
             this.declineChallenge(element.id);
@@ -118,7 +124,29 @@ export class LobbyComponent implements OnInit {
     });
   }
 
-  acceptChallenge() {
-    console.log("You accepted!");
+  acceptChallenge(gameDataStart) {
+    // create the board record first and then update the game record
+    this.challengers = [];
+    this.dataService.createBoard().subscribe((data: any) => {
+      gameDataStart.board_id = data.insertId;
+
+      this.dataService.updateGameState(gameDataStart).then((data) => {
+
+        var newUserData = {
+          username: this.user,
+          login: true,
+          gameroom_id: gameDataStart.id
+        }
+
+        this.dataService.updateUser(newUserData)
+
+        this.router.navigate(['/game'], {
+          queryParams: { board_id: gameDataStart.board_id }
+       });
+      })
+      .catch((err) => {
+        console.log("You're so bad that nobody wants to play with you");
+      });
+    })
   }
 }

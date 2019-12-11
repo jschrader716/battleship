@@ -34,6 +34,14 @@ export class DataService {
     });
   }
 
+  updateGameState(data) {
+    return new Promise((resolve) => {
+      this.http.put(this.environment.apiUrl + '/game', data, httpOptions).subscribe((data) => {
+        resolve(data);
+      });
+    });
+  }
+
   deleteGameById(id): Promise<any> {
     return new Promise((resolve) => {
       this.http.delete(this.environment.apiUrl + '/game', { params: { game_id: id } }).subscribe((data) => {
@@ -55,29 +63,16 @@ export class DataService {
   //=============================================================================================================
   // GAME BOARD API FUNCTIONS
   //=============================================================================================================
-  getBoardState() {
-    // return new Promise((resolve) => {
-    //   this.http.get(this.environment.apiUrl + '/game/board').subscribe((data) => {
-    //     console.log(data);
-    //     resolve(data);
-    //   });
-    // });
-
-    let boardstate = new BoardState({
-      // pass in key value pairs as they coming from the daaaaaatabase betch
-      id: 0,
-      board_state_1: "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      board_state_2: "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      turn: 0,
-      max_turn: 0,
-      game_terminated: false,
+  getBoardState(id): Promise<any> {
+    return new Promise((resolve) => {
+      this.http.get(this.environment.apiUrl + '/game/board', { params: { board_id: id } }).subscribe((data) => {
+        resolve(data);
+      });
     });
-
-    return boardstate;
   }
 
   createBoard() {
-    return this.http.post(this.environment.apiUrl + '/game/board', httpOptions).subscribe((data) => {});
+    return this.http.post(this.environment.apiUrl + '/game/board', httpOptions);
   }
 
   updateBoardState(body): Promise<any> {

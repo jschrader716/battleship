@@ -6,11 +6,12 @@ export class BoardState {
     board_state_2: string = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
     turn: number = 0;
     max_turn: number = 0;
-    game_terminated: boolean = false;
+    game_terminated: number = 0;
     board_state_1_obj: Array<any> = [];
     board_state_2_obj: Array<any> = []; 
 
     constructor(obj?) {
+        console.log(obj.game_terminated);
         this.id = obj && obj.id || null;
         this.board_state_1 = obj && obj.board_state_1 || null;
         this.board_state_2 = obj && obj.board_state_2 || null;

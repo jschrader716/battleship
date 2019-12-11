@@ -2,10 +2,20 @@ import { Injectable } from '@angular/core';
 import swal from 'sweetalert2';
 import { resolve } from 'url';
 
+const swalChallenge = swal.mixin({
+  customClass: {
+    confirmButton: 'btn btn-success',
+    cancelButton: 'btn btn-danger'
+  },
+  buttonsStyling: false
+})
+
 @Injectable({
   providedIn: 'root'
 })
 export class AlertService {
+
+  
 
   private swal = require('sweetalert2');
   constructor() { }
@@ -18,15 +28,23 @@ export class AlertService {
     this.swal.fire(successMsg);
   }
 
+  disgustingBrowser() {
+    this.swal.fire(
+      {
+        title: 'Disgusting...',
+        html: "Why on earth are you using a gross browser?<br /><a href='https://browsehappy.com'>Click here for a happier life</a>",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Accept',
+        cancelButtonText: 'Decline',
+        reverseButtons: true,
+        position: 'bottom-end',
+      }
+    );
+  }
+
   challengeAlert(username) {
     return new Promise((resolve) => {
-      const swalChallenge = swal.mixin({
-        customClass: {
-          confirmButton: 'btn btn-success',
-          cancelButton: 'btn btn-danger'
-        },
-        buttonsStyling: false
-      })
   
       swalChallenge.fire(
         {

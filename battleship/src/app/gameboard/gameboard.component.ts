@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { BoardState } from '../models/boardstate';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-gameboard',
@@ -21,13 +22,14 @@ export class GameboardComponent implements OnInit {
     public boardY: string;
     public boardArr: Array<any>;
     public cellsize: number;
-    private gameId: string = '1';
     public boardState: BoardState;
+    private gameId: number;
+
     
 
 
 
-  constructor(private authService: AuthService, private router: Router, private dataService: DataService) { 
+  constructor(private authService: AuthService, private router: Router, private dataService: DataService, private route: ActivatedRoute) { 
     this.rows = this.gameInfo.rows;
     this.cols = this.gameInfo.cols;
     this.svgns = this.gameInfo.svgns;
@@ -35,14 +37,22 @@ export class GameboardComponent implements OnInit {
     this.boardY = this.gameInfo.boardY;
     this.boardArr = this.gameInfo.boardArr;
     this.cellsize = this.gameInfo.cellsize;
-    this.boardState = dataService.getBoardState();
-    console.log(this.boardState.board_state_1_obj);
+    this.boardState;
   }
 
   ngOnInit() {
     this.authService.isAuthenticated().then((data) => {
       if(data == true) {
-        return;
+        this.route.queryParams.subscribe(params => {
+          this.gameId = params.board_id;
+
+          this.dataService.getBoardState(this.gameId).then((data) => {
+            console.log(data);
+            this.boardState = new BoardState(data[0]);
+            console.log(this.boardState);
+            this.boardSetup();
+          })
+        });
       }
       else {
         this.router.navigate(['/login']);
@@ -52,10 +62,6 @@ export class GameboardComponent implements OnInit {
 
   ngDoCheck() {
 
-  }
-
-  ngAfterViewInit() {
-    this.boardSetup();
   }
 
   boardSetup(){
