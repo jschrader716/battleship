@@ -40,9 +40,9 @@ export class LobbyComponent implements OnInit {
     this.cognitoService.getCurrentUser().then((data) => {
       this.user = data.username;
 
-      this.challengerHeartbeat = setInterval(() => {
+      // this.challengerHeartbeat = setInterval(() => {
       this.checkChallenges();
-      }, 5000);
+      // }, 5000);
     });
   }
 
@@ -62,6 +62,8 @@ export class LobbyComponent implements OnInit {
         losses: 0,
         gameroom_id: null
       }
+
+      console.log("LOGOOUT DATA: ", logoutData);
 
       this.dataService.deleteAllGames(data.username).then(() => {
         this.dataService.updateUser(logoutData).then((data) => {
@@ -138,11 +140,14 @@ export class LobbyComponent implements OnInit {
           gameroom_id: gameDataStart.id
         }
 
-        this.dataService.updateUser(newUserData)
-
-        this.router.navigate(['/game'], {
-          queryParams: { board_id: gameDataStart.board_id }
-       });
+        this.dataService.updateUser(newUserData).then(() => {
+          this.router.navigate(['/game'], {
+            queryParams: { board_id: gameDataStart.board_id }
+          });
+        })
+        .catch((err) => {
+          console.log("Failed to update user to new game state: ", err)
+        });
       })
       .catch((err) => {
         console.log("You're so bad that nobody wants to play with you");

@@ -1,9 +1,7 @@
 .page-content {
 
     .game-board-wrapper {
-        width: 60%;
         height: 100%;
-        position: static !important;
         display: inline-block;
     
         svg {
@@ -24,12 +22,6 @@
         stroke: black; 
         stroke-width: 5px; 
         background-image: url("../../assets/images/ocean.jpg");
-    }
-    
-    .game-board-wrapper {
-        position:absolute;
-        left:40px;
-        top:40px;
     }
     
     .player0   {

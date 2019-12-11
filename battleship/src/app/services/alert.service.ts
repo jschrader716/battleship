@@ -94,4 +94,14 @@ export class AlertService {
       console.log("Error occured with challenge modal", err);
     })
   }
+
+  setShipsAlert() {
+    swalChallenge.fire(
+      {
+        title: 'PREPARE FOR WAR!',
+        html: 'Strategically place your ships in the water',
+        icon: 'info',
+      }
+    )
+  }
 }

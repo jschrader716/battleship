@@ -24,6 +24,12 @@ export class ChatComponent implements OnInit {
     this.getAllMessages();
   }
 
+  ngOnDestroy() {
+    if (this.messengerHeartbeat) {
+      clearInterval(this.messengerHeartbeat);
+    }
+  }
+
   sendMsg(key) {
     if(key.keyCode == 13 && key != '') {
       this.cognitoService.getCurrentUser().then((user) => {
@@ -48,12 +54,6 @@ export class ChatComponent implements OnInit {
     }
   }
 
-  ngOnDestroy() {
-    if (this.messengerHeartbeat) {
-      clearInterval(this.messengerHeartbeat);
-    }
-  }
-
   getAllMessages() {
       let game_id: number;
       this.cognitoService.getCurrentUser().then((user) => {
@@ -65,7 +65,7 @@ export class ChatComponent implements OnInit {
           console.log("Error when grabbing user info in chat");
         })
 
-        this.messengerHeartbeat = setInterval(() => { 
+        // this.messengerHeartbeat = setInterval(() => { 
           this.messages = [];
           var chatString = "";
           
@@ -76,9 +76,10 @@ export class ChatComponent implements OnInit {
               document.getElementById('chat-area').innerHTML = chatString;
               document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
             });
+            console.log(game_id);
             this.buildUserList(game_id);
           });
-        }, 2000);
+        // }, 2000);
 
       })
       .catch((err) => {

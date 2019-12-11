@@ -11,7 +11,6 @@ export class BoardState {
     board_state_2_obj: Array<any> = []; 
 
     constructor(obj?) {
-        console.log(obj.game_terminated);
         this.id = obj && obj.id || null;
         this.board_state_1 = obj && obj.board_state_1 || null;
         this.board_state_2 = obj && obj.board_state_2 || null;

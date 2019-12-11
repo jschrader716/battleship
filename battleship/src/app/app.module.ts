@@ -19,11 +19,12 @@ import { CellComponent } from './cell/cell.component';
 import { ChatComponent } from './chat/chat.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'lobby', component: LobbyComponent, canActivate: [AuthGuard] },
   { path: 'game', component: GameboardComponent, canActivate: [AuthGuard] },
-  { path: 'chat', component: ChatComponent }
+  { path: 'chat', component: ChatComponent },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '**', redirectTo: '/login', pathMatch: 'full' }
 ]
 
 @NgModule({

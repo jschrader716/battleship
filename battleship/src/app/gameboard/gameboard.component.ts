@@ -1,10 +1,11 @@
-import { Component, OnInit, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { GameInfo } from '../models/gameinfo';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { BoardState } from '../models/boardstate';
 import { ActivatedRoute } from '@angular/router';
+import { AlertService } from '../services/alert.service';
 
 @Component({
   selector: 'app-gameboard',
@@ -25,11 +26,7 @@ export class GameboardComponent implements OnInit {
     public boardState: BoardState;
     private gameId: number;
 
-    
-
-
-
-  constructor(private authService: AuthService, private router: Router, private dataService: DataService, private route: ActivatedRoute) { 
+  constructor(private authService: AuthService, private router: Router, private dataService: DataService, private route: ActivatedRoute, private alertService: AlertService) { 
     this.rows = this.gameInfo.rows;
     this.cols = this.gameInfo.cols;
     this.svgns = this.gameInfo.svgns;
@@ -51,6 +48,8 @@ export class GameboardComponent implements OnInit {
             this.boardState = new BoardState(data[0]);
             console.log(this.boardState);
             this.boardSetup();
+            // after initial board setup, tell players to set their pieces
+            //this.alertService.setShipsAlert();
           })
         });
       }
@@ -60,18 +59,22 @@ export class GameboardComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+
+  }
+
   ngDoCheck() {
 
   }
 
   boardSetup(){
-    var game = document.createElementNS(this.svgns,'game');
+    var game = document.createElementNS(this.svgns,'g');
     game.setAttributeNS(null, 'x', this.boardX + 'px');
     game.setAttributeNS(null, 'y', this.boardY + 'px');
     game.setAttributeNS(null, 'width', 'auto');
     game.setAttributeNS(null, 'height', 'auto');
     game.setAttributeNS(null,'transform','translate('+ this.boardX + ',' + this.boardY + ')');
-    game.setAttributeNS(null,'id','game' + this.gameId);    
+    game.setAttributeNS(null,'id','game' + this.gameId);
     
     //stick game on board
     
@@ -90,24 +93,25 @@ export class GameboardComponent implements OnInit {
         cell.setAttributeNS(null, 'x', this.cellsize * xCellCoord + 75 + 'px');
         cell.setAttributeNS(null, 'y', this.cellsize * yCellCoord + 75 + 'px');
         cell.setAttributeNS(null, 'class', 'cell');
-        cell.setAttributeNS(null, 'id', 'cell_' + cellId);
-        document.getElementsByTagName('svg')[0].appendChild(cell);
-        // document.getElementById('game1').appendChild(cell);
+        cell.setAttributeNS(null, 'id', cellId.toString());
+        cell.setAttributeNS(null, 'cursor', 'crosshair');
+
+        cell.addEventListener("mouseover", () => {
+          this.buildShips(cell.getAttributeNS(null, 'id'));
+        });
+        
+
+        document.getElementsByTagName('g')[0].appendChild(cell);
         xCellCoord++;
         cellId++;
       });
       yCellCoord++;
       xCellCoord = 0;
     });
-  
-    ////////////////////////////end write new code here///////////////////////
-    //put the drop code on the document...
-    // document.getElementsByTagName('svg')[0].addEventListener('mouseup',releaseMove,false);
-    // //put the go() method on the svg doc.
-    // document.getElementsByTagName('svg')[0].addEventListener('mousemove',go,false);
-    // //put the player in the text
-    // document.getElementById('youPlayer').firstChild.data+=player0;
-    // document.getElementById('opponentPlayer').firstChild.data+=player1;
   }
 
+  buildShips(id) {
+    // sexy algorithm time
+    
+  }
 }
