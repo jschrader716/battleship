@@ -25,6 +25,9 @@ export class GameboardComponent implements OnInit {
     public cellsize: number;
     public boardState: BoardState;
     private gameId: number;
+    private position: string = "horizontal";
+    private hoverId: any;
+    private shipSize: number = 5;
 
   constructor(private authService: AuthService, private router: Router, private dataService: DataService, private route: ActivatedRoute, private alertService: AlertService) { 
     this.rows = this.gameInfo.rows;
@@ -38,6 +41,16 @@ export class GameboardComponent implements OnInit {
   }
 
   ngOnInit() {
+
+    document.addEventListener('keypress', (keypress) => {
+      if(keypress.keyCode == 114) {
+        (this.position === 'horizontal') ? this.position = 'vertical' : this.position = 'horizontal'; 
+        
+        this.wipeHoverShip(this.hoverId, this.position, this.shipSize);
+        this.showShipPlacement(this.hoverId, this.shipSize, true);
+      }
+    })
+
     this.authService.isAuthenticated().then((data) => {
       if(data == true) {
         this.route.queryParams.subscribe(params => {
@@ -96,11 +109,21 @@ export class GameboardComponent implements OnInit {
         cell.setAttributeNS(null, 'id', cellId.toString());
         cell.setAttributeNS(null, 'cursor', 'crosshair');
 
-        cell.addEventListener("mouseover", () => {
-          this.buildShips(cell.getAttributeNS(null, 'id'));
-        });
-        
+        // foundation functions for building ships
 
+        cell.addEventListener("mouseover", () => {
+          this.hoverId = cell.getAttributeNS(null, 'id');
+          this.showShipPlacement(cell.getAttributeNS(null, 'id'), 5, true);
+        });
+
+        cell.addEventListener("mouseout", () => {
+          this.showShipPlacement(cell.getAttributeNS(null, 'id'), 5, false);
+        })
+
+        cell.addEventListener("click", () => {
+          this.buildShips(cell.getAttributeNS(null, 'id'));
+        })
+        
         document.getElementsByTagName('g')[0].appendChild(cell);
         xCellCoord++;
         cellId++;
@@ -112,6 +135,72 @@ export class GameboardComponent implements OnInit {
 
   buildShips(id) {
     // sexy algorithm time
-    
+    // here we will check if they are in a valid position to place a ship
+    // once a ship is placed, interate to the next one and use same logic with different length    
+  }
+
+  showShipPlacement(id, shipSize, visible) {
+    var halfShipLength = Math.floor(shipSize/2);
+
+    if(visible) {
+      if(shipSize == 1) {
+        document.getElementById(id).setAttributeNS(null, 'fill', 'red');
+      }
+      else {
+        if(this.position === 'horizontal') {
+          for(var i = 0; i < halfShipLength; i++) {
+            document.getElementById(id).setAttributeNS(null, 'fill', 'red');
+            document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', 'red');
+            document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', 'red');
+          }
+        }
+        else {
+          for(var i = 0; i < halfShipLength; i++) {
+            document.getElementById(id).setAttributeNS(null, 'fill', 'red');
+            document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', 'red');
+            document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', 'red');
+          }
+        }
+      }
+    }
+    else {
+      if(shipSize == 1) {
+        document.getElementById(id).setAttributeNS(null, 'fill', '#55697A');
+      }
+      else {
+        if(this.position === 'horizontal') {
+          for(var i = 0; i < halfShipLength; i++) {
+            document.getElementById(id).setAttributeNS(null, 'fill', '#55697A');
+            document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', '#55697A');
+            document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', '#55697A');
+          }
+        }
+        else {
+          for(var i = 0; i < halfShipLength; i++) {
+            document.getElementById(id).setAttributeNS(null, 'fill', '#55697A');
+            document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', '#55697A');
+            document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', '#55697A');
+          }
+        }
+      }
+    }
+  }
+
+  wipeHoverShip(id, position, shipSize) {
+    var halfShipLength = Math.floor(shipSize/2);
+    if(position === 'horizontal') {
+      for(var i = 0; i < halfShipLength; i++) {
+        document.getElementById(id).setAttributeNS(null, 'fill', 'red');
+        document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', '#55697A');
+        document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', '#55697A');
+      }
+    }
+    else {
+      for(var i = 0; i < halfShipLength; i++) {
+        document.getElementById(id).setAttributeNS(null, 'fill', '#55697A');
+        document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', '#55697A');
+        document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', '#55697A');
+      }
+    }
   }
 }
