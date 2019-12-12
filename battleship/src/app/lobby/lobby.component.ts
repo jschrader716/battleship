@@ -142,7 +142,8 @@ export class LobbyComponent implements OnInit {
 
         this.dataService.updateUser(newUserData).then(() => {
           this.router.navigate(['/game'], {
-            queryParams: { board_id: gameDataStart.board_id }
+            // forgive my crappy attempt to obfuscate some data from the user hahaha
+            queryParams: { flim: gameDataStart.id }
           });
         })
         .catch((err) => {

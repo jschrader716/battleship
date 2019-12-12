@@ -1,11 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { GameInfo } from '../models/gameinfo';
+import { ActivatedRoute, Router } from '@angular/router';
+
 import { AuthService } from '../services/auth.service';
-import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
-import { BoardState } from '../models/boardstate';
-import { ActivatedRoute } from '@angular/router';
 import { AlertService } from '../services/alert.service';
+import { CognitoService } from '../services/cognito.service';
+
+import { GameInfo } from '../models/gameinfo';
+import { BoardState } from '../models/boardstate';
+import { ChallengeRecord } from '../models/challengeRecord'
 
 @Component({
   selector: 'app-gameboard',
@@ -25,12 +28,24 @@ export class GameboardComponent implements OnInit {
     public cellsize: number;
     public boardState: BoardState;
     private gameId: number;
+    private boardId: number;
     private position: string = "horizontal";
     private hoverId: any;
     private shipSize: number = 5;
-    private shipSizeList: number[] = [5,3,1]
+    private shipSizeList: number[] = [5,3,1];
+    private playerTurn: boolean = false;
+    private playerUsername: string = "";
+    private gameData: ChallengeRecord;
+    private highLight: boolean = true;
+    private shipsPlaced: boolean = false;
+    private shipLocations: string[] = [];
 
-  constructor(private authService: AuthService, private router: Router, private dataService: DataService, private route: ActivatedRoute, private alertService: AlertService) { 
+  constructor(private authService: AuthService,
+    private router: Router,
+    private dataService: DataService,
+    private route: ActivatedRoute,
+    private alertService: AlertService,
+    private cognitoService: CognitoService) { 
     this.rows = this.gameInfo.rows;
     this.cols = this.gameInfo.cols;
     this.svgns = this.gameInfo.svgns;
@@ -56,18 +71,43 @@ export class GameboardComponent implements OnInit {
 
     this.authService.isAuthenticated().then((data) => {
       if(data == true) {
-        this.route.queryParams.subscribe(params => {
-          this.gameId = params.board_id;
 
-          this.dataService.getBoardState(this.gameId).then((data) => {
-            console.log(data);
-            this.boardState = new BoardState(data[0]);
-            console.log(this.boardState);
-            this.boardSetup();
-            // after initial board setup, tell players to set their pieces
-            //this.alertService.setShipsAlert();
-          })
-        });
+        this.cognitoService.getCurrentUser().then((data) => {
+          this.playerUsername = data.username;
+          this.route.queryParams.subscribe(params => {
+            this.gameId = params.flim;
+  
+            this.dataService.getGameState(this.gameId).then((data) => {
+              this.gameData = new ChallengeRecord(data[0]);
+              this.boardId = this.gameData.board_id;
+  
+              if(this.playerUsername === this.gameData.player_1) {
+                this.playerTurn = true;
+              }
+  
+              this.dataService.getBoardState(this.boardId).then((data) => {
+                console.log(data);
+                this.boardState = new BoardState(data[0]);
+                console.log(this.boardState);
+                this.boardSetup();
+                // after initial board setup, tell players to set their pieces
+                //this.alertService.setShipsAlert();
+              })
+              .catch((err) =>{
+                console.log("Failure to retreive board state")
+              });
+            })
+            .catch((err) => {
+              console.log("Failure to retreive game state");
+            });
+          }, 
+          (err) => {
+            console.log("Failed to fill parameters in route");
+          });
+        })
+        .catch((err) => {
+          console.log("Failed to retrieve user info");
+        })
       }
       else {
         this.router.navigate(['/login']);
@@ -114,28 +154,50 @@ export class GameboardComponent implements OnInit {
 
         // foundation functions for building ships
 
-        cell.addEventListener("mouseover", () => {
-          this.hoverId = cell.getAttributeNS(null, 'id');
-          this.showShipPlacement(cell.getAttributeNS(null, 'id'), this.shipSize, true);
-        });
+        cell.addEventListener("mouseover", this.highlightShipArea.bind(this));
 
-        cell.addEventListener("mouseout", () => {
-          this.showShipPlacement(cell.getAttributeNS(null, 'id'), this.shipSize, false);
-        })
+        cell.addEventListener("mouseout", this.hideShipArea.bind(this));
 
         cell.addEventListener("click", () => {
           this.buildShips(cell.getAttributeNS(null, 'id'), this.shipSize).then((data) => {
-            if(data != null) { // then we want to permanently color the pieces
-              let curShip = this.shipSizeList.indexOf(this.shipSize);
-              if(curShip >= 0 && curShip < this.shipSizeList.length - 1) {
-                this.shipSize = this.shipSizeList[curShip + 1]
-              }
-              else {
-                // we placed all out ships and need to do something else
+            if(this.shipsPlaced === false) {
+              if(data != null) { // then we want to permanently color the pieces and update the cell array
+
+                if(this.shipsPlaced === false)  {
+                  data.forEach(element => {
+                    document.getElementById(element).setAttributeNS(null, 'name', 'spaceTaken');
+                    document.getElementById(element).setAttributeNS(null, 'fill', '#9FA4A7');
+                    this.shipLocations.push(element);
+                    console.log(this.shipLocations);
+                  });
+                }
+  
+                let curShip = this.shipSizeList.indexOf(this.shipSize);
+  
+                if(curShip >= 0 && curShip < this.shipSizeList.length - 1) {
+                  this.shipSize = this.shipSizeList[curShip + 1]
+                }
+                else {
+                  // we placed all out ships and need to send ready notification
+                  for(var i = 0; i < document.getElementById('game' + this.gameId).children.length; i++) {
+                    var cell = document.getElementById('game' + this.gameId).children[i];
+                    this.highLight = false;
+                    this.shipsPlaced = true;
+                    this.updateGameBoard(this.shipLocations).then((data) => {
+  
+                    });
+                    if(this.playerTurn === true) {
+                      this.alertService.success("Your turn");
+                    }
+                  }
+                }
               }
             }
             else {
-
+              // ships are placed, updated board state, and turn identified, now what?
+              if(this.playerTurn === true) {
+                this.alertService.success("Your turn");
+              }
             }
           });
         })
@@ -147,6 +209,23 @@ export class GameboardComponent implements OnInit {
       yCellCoord++;
       xCellCoord = 0;
     });
+  }
+
+  updateGameBoard(shipCoordsList): Promise<any> {
+    return new Promise((resolve) => {
+      console.log(shipCoordsList);
+    });
+  }
+
+  highlightShipArea(event) {
+    var cell = document.getElementById(event.path[0].id);
+    this.hoverId = cell.getAttributeNS(null, 'id');
+    this.showShipPlacement(cell.getAttributeNS(null, 'id'), this.shipSize, true);
+  }
+
+  hideShipArea(event) {
+    var cell = document.getElementById(event.path[0].id);
+    this.showShipPlacement(cell.getAttributeNS(null, 'id'), this.shipSize, false);
   }
 
   buildShips(id, shipSize): Promise<any> {
@@ -167,16 +246,20 @@ export class GameboardComponent implements OnInit {
             shipPart = (Number(id) - (i + 1));
             if(shipPart%10 === 0) {
               this.alertService.error("Invalid Ship Placement");
-              resolve(null);
+              shipArray.push(null);
             }
-            shipArray.push(document.getElementById(shipPart).id);
+            else {
+              shipArray.push(document.getElementById(shipPart).id);
+            }
 
             shipPart = (Number(id) + (i + 1));
             if(shipPart%10 === 1) {
               this.alertService.error("Invalid Ship Placement");
-              resolve(null);
+              shipArray.push(null);
             }
-            shipArray.push(document.getElementById(shipPart).id);
+            else {
+              shipArray.push(document.getElementById(shipPart).id);
+            }
           }
         }
         else {
@@ -191,19 +274,22 @@ export class GameboardComponent implements OnInit {
           }
         }
 
+        var cleanShip = true;
         shipArray.forEach(element => {
           // if we get a null value we know that the ship is not in a valid spot so we can't update the db just yet
-          if(element == null) {
-            this.alertService.error("Invalid Ship Placement!");
-            resolve(null);
+          if(element != null) {
+            return;
           }
           else {
-            document.getElementById(element).setAttributeNS(null, 'name', 'spaceTaken');
-            document.getElementById(element).setAttributeNS(null, 'fill', '#9FA4A7');
+            cleanShip = false;
+            this.alertService.error("Invalid Ship Placement!");
+            return;
           }
         });
 
-        resolve(shipArray);
+        if(cleanShip) {
+          resolve(shipArray);
+        }
       }
       catch(err) {
         this.alertService.error("Invalid ship placement");
@@ -215,6 +301,10 @@ export class GameboardComponent implements OnInit {
   }
 
   showShipPlacement(id, shipSize, visible) {
+    if(this.highLight == false) {
+      return;
+    } 
+
     try {
       var halfShipLength = Math.floor(shipSize/2);
 

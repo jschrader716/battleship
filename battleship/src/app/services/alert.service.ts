@@ -99,7 +99,7 @@ export class AlertService {
     swalChallenge.fire(
       {
         title: 'PREPARE FOR WAR!',
-        html: 'Strategically place your ships in the water',
+        html: "Strategically place your ships in the water<br/>Press 'R' to rotate ships",
         icon: 'info',
       }
     )

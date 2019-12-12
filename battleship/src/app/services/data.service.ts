@@ -26,6 +26,14 @@ export class DataService {
       return this.http.post(this.environment.apiUrl + '/game', gameData, httpOptions);
   }
 
+  getGameState(id) {
+    return new Promise((resolve) => {
+      this.http.get(this.environment.apiUrl + '/game', { params: { id: id } }).subscribe((data) => {
+        resolve(data);
+      });
+    });
+  }
+
   getChallenges(username) {
     return new Promise((resolve) => {
       this.http.get(this.environment.apiUrl + '/game', { params: { username: username } }).subscribe((data) => {

@@ -76,7 +76,6 @@ export class ChatComponent implements OnInit {
               document.getElementById('chat-area').innerHTML = chatString;
               document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
             });
-            console.log(game_id);
             this.buildUserList(game_id);
           });
         // }, 2000);
