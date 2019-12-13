@@ -1,22 +1,39 @@
 .page-content {
+    position: relative;
 
-    .game-board-wrapper {
-        height: 100%;
-        display: inline-block;
-    
-        svg {
-            display: block;
-            margin-left: auto;
-            padding-right: 30px;
+
+    .game-header {
+        text-align: center;
+        h1, h3 {
+            margin-bottom: 5px;
+            margin-top: 5px;
         }
     }
-    
-    .chat-wrapper {
-        width: 40%;
+
+    .game-wrapper {
+        display: flex;
+        justify-content: center;
         height: 100%;
-        display: inline-block;
-        position: absolute;
+
+        .game-board-wrapper {
+            height: 100%;
+            display: inline-block;
+        
+            svg {
+                display: block;
+                margin-left: auto;
+                margin-right: 30px;
+            }
+        }
+
+        .chat-wrapper {
+            width: 30%;
+            display: inline-block;
+            vertical-align: top;
+        }
     }
+
+
     
     #background { 
         stroke: black; 

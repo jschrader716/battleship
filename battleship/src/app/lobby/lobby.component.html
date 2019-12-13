@@ -1,6 +1,7 @@
 <button (click)="logout()">Logout</button>
 <div class="page-content">
     <h1>Battleship (Main Lobby)</h1>
+    <h3>Logged in as: {{user}}</h3>
     <app-chat (challengeOpponent)=requestChallenge($event)></app-chat>
 </div>
 

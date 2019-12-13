@@ -1,23 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-    <title>BATTLESHIP</title>
-    </head>
-    <body>
-        <div class="page-content">
-            <div class="game-board-wrapper">
-                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="900px" height="900px">
-                    <defs>
-                        <pattern id="ocean-pattern" width="100" height="100" patternUnits="userSpaceOnUse" >
-                            <image xlink:href="../../assets/images/ocean.jpg" x="0" y="0" width="100" height="100" />
-                        </pattern>
-                    </defs>
-                    <rect x="0px" y="0px" width="100%" height="100%" fill="url(#ocean-pattern)" id="background"></rect>
-                </svg>
-            </div>
-            <div class="chat-wrapper">
-                <app-chat></app-chat>
-            </div>
+<div class="page-content">
+    <div class="game-header">
+        <h1>Battleship</h1>
+        <h3>{{ playerUsername | uppercase }} vs. {{ oppPlayerUsername | uppercase}}</h3>
+    </div>
+    <div class="game-wrapper">
+        <div class="game-board-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="900px" height="900px">
+                <defs>
+                    <pattern id="ocean-pattern" width="100" height="100" patternUnits="userSpaceOnUse" >
+                        <image xlink:href="../../assets/images/ocean.jpg" x="0" y="0" width="100" height="100" />
+                    </pattern>
+                </defs>
+                <rect x="0px" y="0px" width="100%" height="100%" fill="url(#ocean-pattern)" id="background"></rect>
+            </svg>
         </div>
-    </body>
-</html>
+        <div class="chat-wrapper">
+            <app-chat></app-chat>
+        </div>
+    </div>
+</div>

@@ -2,24 +2,20 @@ import { ɵangular_packages_router_router_n } from '@angular/router';
 
 export class BoardState {
     id: number = 0;
-    board_state_1: string = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-    board_state_2: string = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    board_state: string = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
     turn: number = 0;
     max_turn: number = 0;
     game_terminated: number = 0;
-    board_state_1_obj: Array<any> = [];
-    board_state_2_obj: Array<any> = []; 
+    board_state_obj: Array<any> = [];
 
     constructor(obj?) {
         this.id = obj && obj.id || null;
-        this.board_state_1 = obj && obj.board_state_1 || null;
-        this.board_state_2 = obj && obj.board_state_2 || null;
+        this.board_state = obj && obj.board_state_1 || obj && obj.board_state_2 || null;
         this.turn = obj && obj.turn || null;
         this.max_turn = obj && obj.max_turn || null;
         this.game_terminated = obj && obj.game_terminated || null;
 
-        this.board_state_1_obj = this.buildBoard(this.board_state_1);
-        this.board_state_2_obj = this.buildBoard(this.board_state_2);
+        this.board_state_obj = (this.board_state) ? this.buildBoard(this.board_state) : null;
     }
 
     buildBoard(stateString) {

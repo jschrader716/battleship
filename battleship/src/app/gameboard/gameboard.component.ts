@@ -9,6 +9,7 @@ import { CognitoService } from '../services/cognito.service';
 import { GameInfo } from '../models/gameinfo';
 import { BoardState } from '../models/boardstate';
 import { ChallengeRecord } from '../models/challengeRecord'
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 
 @Component({
   selector: 'app-gameboard',
@@ -34,11 +35,13 @@ export class GameboardComponent implements OnInit {
     private shipSize: number = 5;
     private shipSizeList: number[] = [5,3,1];
     private playerTurn: boolean = false;
-    private playerUsername: string = "";
     private gameData: ChallengeRecord;
     private highLight: boolean = true;
     private shipsPlaced: boolean = false;
     private shipLocations: string[] = [];
+    private getBoard;
+    public playerUsername: string = "";
+    public oppPlayerUsername: string = "";
 
   constructor(private authService: AuthService,
     private router: Router,
@@ -57,7 +60,6 @@ export class GameboardComponent implements OnInit {
   }
 
   ngOnInit() {
-
     this.shipSize = this.shipSizeList[0];
 
     document.addEventListener('keypress', (keypress) => {
@@ -80,21 +82,37 @@ export class GameboardComponent implements OnInit {
             this.dataService.getGameState(this.gameId).then((data) => {
               this.gameData = new ChallengeRecord(data[0]);
               this.boardId = this.gameData.board_id;
-  
+
+              var boardInfo = {
+                "id" : this.boardId
+              }
+     
               if(this.playerUsername === this.gameData.player_1) {
-                this.playerTurn = true;
+                boardInfo['player'] = 1;
+              }
+              else {
+                boardInfo['player'] = 2;
               }
   
-              this.dataService.getBoardState(this.boardId).then((data) => {
-                console.log(data);
+              this.dataService.getBoardState(boardInfo).then((data) => {
                 this.boardState = new BoardState(data[0]);
+
+                if(this.playerUsername === this.gameData.player_1 && this.boardState.turn == 1) {
+                  this.playerTurn = true;
+                  this.oppPlayerUsername = this.gameData.player_2;
+                }
+                else {
+                  this.oppPlayerUsername = this.gameData.player_1;
+                }
+
                 console.log(this.boardState);
                 this.boardSetup();
                 // after initial board setup, tell players to set their pieces
-                //this.alertService.setShipsAlert();
+                this.alertService.setShipsAlert();
               })
               .catch((err) =>{
                 console.log("Failure to retreive board state")
+                console.log(err);
               });
             })
             .catch((err) => {
@@ -116,7 +134,9 @@ export class GameboardComponent implements OnInit {
   }
 
   ngOnDestroy() {
-
+    if (this.getBoard) {
+      clearInterval(this.getBoard);
+    }
   }
 
   ngDoCheck() {
@@ -139,7 +159,7 @@ export class GameboardComponent implements OnInit {
     var xCellCoord = 0;
     var yCellCoord = 0;
     var cellId = 1;
-    this.boardState.board_state_1_obj.forEach(row => {
+    this.boardState.board_state_obj.forEach(row => {
       row.forEach(element => {
         var cell = document.createElementNS(this.svgns,'rect');
         cell.setAttributeNS(null, 'stroke', 'red');
@@ -153,13 +173,13 @@ export class GameboardComponent implements OnInit {
         cell.setAttributeNS(null, 'cursor', 'crosshair');
 
         // foundation functions for building ships
-
         cell.addEventListener("mouseover", this.highlightShipArea.bind(this));
 
         cell.addEventListener("mouseout", this.hideShipArea.bind(this));
 
         cell.addEventListener("click", () => {
-          this.buildShips(cell.getAttributeNS(null, 'id'), this.shipSize).then((data) => {
+          this.executeGame(cell.getAttributeNS(null, 'id'), this.shipSize).then((data) => {
+            
             if(this.shipsPlaced === false) {
               if(data != null) { // then we want to permanently color the pieces and update the cell array
 
@@ -168,7 +188,6 @@ export class GameboardComponent implements OnInit {
                     document.getElementById(element).setAttributeNS(null, 'name', 'spaceTaken');
                     document.getElementById(element).setAttributeNS(null, 'fill', '#9FA4A7');
                     this.shipLocations.push(element);
-                    console.log(this.shipLocations);
                   });
                 }
   
@@ -178,25 +197,34 @@ export class GameboardComponent implements OnInit {
                   this.shipSize = this.shipSizeList[curShip + 1]
                 }
                 else {
-                  // we placed all out ships and need to send ready notification
-                  for(var i = 0; i < document.getElementById('game' + this.gameId).children.length; i++) {
-                    var cell = document.getElementById('game' + this.gameId).children[i];
-                    this.highLight = false;
-                    this.shipsPlaced = true;
-                    this.updateGameBoard(this.shipLocations).then((data) => {
-  
-                    });
+                  this.highLight = false;
+                  this.shipsPlaced = true;
+
+                  this.prepareBoard(this.shipLocations).then((data) => {
+                    this.setShips();
+
+                    // this.getBoard = setInterval(() => {
+                      this.getTurn(this.playerUsername);
+                    // }, 2000);
                     if(this.playerTurn === true) {
                       this.alertService.success("Your turn");
                     }
-                  }
+                  });
                 }
               }
             }
             else {
               // ships are placed, updated board state, and turn identified, now what?
+              this.getTurn(this.playerUsername);
               if(this.playerTurn === true) {
-                this.alertService.success("Your turn");
+                this.fireMissile(cell.getAttributeNS(null, 'id')).then((data) => {
+                  console.log("LAUNCH TORPEDO");
+                  console.log(data);
+                  this.playerTurn = false;
+                });
+              }
+              else {
+                this.alertService.error("Not your turn you filthy animal");
               }
             }
           });
@@ -211,9 +239,118 @@ export class GameboardComponent implements OnInit {
     });
   }
 
-  updateGameBoard(shipCoordsList): Promise<any> {
+  fireMissile(missile):Promise<any> {
     return new Promise((resolve) => {
-      console.log(shipCoordsList);
+      var fireInfo = {};
+
+      if(this.playerUsername == this.gameData.player_1) {
+        fireInfo['board_num'] = 2;
+        fireInfo['missile_coord'] = missile;
+        fireInfo['id'] = this.boardId;
+        this.dataService.updateBoardState(fireInfo).then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          console.log("Failed to fire missle. Fire Again!!!!");
+        });
+      }
+      else {
+        fireInfo['board_num'] = 1;
+        fireInfo['missile_coord'] = missile;
+        fireInfo['id'] = this.boardId;
+        this.dataService.updateBoardState(fireInfo).then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          console.log("Failed to fire missle. Fire Again!!!!");
+        });
+      }
+    });
+  }
+
+  getTurn(username) {
+    this.dataService.getGameState(this.gameId).then((gameInfo) => {
+      this.gameData = new ChallengeRecord(gameInfo[0]);
+
+      var boardInfo = {
+        id: gameInfo[0].board_id,
+      }
+
+      if(this.playerUsername === this.gameData.player_1) {
+        boardInfo['player'] = 1;
+      }
+      else {
+        boardInfo['player'] = 2;
+      }
+
+      this.dataService.getBoardState(boardInfo).then((boardData) => {
+        this.boardState = new BoardState(boardData[0]);
+        console.log("TURN BOARD DATA: ", boardData[0]);
+
+        if((username == this.gameData.player_1 && this.boardState.turn == 1) || (username == this.gameData.player_2 && this.boardState.turn == 2)) {
+          console.log("Player's turn");
+          this.playerTurn = true;
+        }
+        else {
+          console.log("NOT Player's turn");
+          this.playerTurn = false;
+        }
+      })
+    })
+    .catch((err) => {
+      console.log("Something when wrong with getting turn");
+    });
+
+  }
+
+  prepareBoard(shipCoordsList): Promise<any> {
+    return new Promise((resolve) => {
+      var body = this.boardState;
+      
+      // split the info into array, change what is needed, then put string back together and send it up
+      if(this.playerUsername == this.gameData.player_1) {
+        var splitBoard = this.boardState.board_state.split('');
+        this.buildBoard(splitBoard, shipCoordsList).then((data) =>{
+          body['player'] = '1';
+          body.board_state = data;
+
+          this.dataService.updateBoardState(body).then((data) => {
+            resolve(data);
+          });
+        })
+        .catch((err) => {
+          console.log("Error occurred when building board");
+        });
+      }
+      else {
+        var splitBoard = this.boardState.board_state.split('');
+        this.buildBoard(splitBoard, shipCoordsList).then((data) =>{
+          body['player'] = '2';
+          body.board_state = data;
+
+          this.dataService.updateBoardState(body).then((data) => {
+            resolve(data);
+          });
+        })
+        .catch((err) => {
+          console.log("Error occurred when building board");
+        });
+      }
+    });
+  }
+
+  buildBoard(boardData, cellCoords): Promise<any> {
+    return new Promise((resolve) => {
+      var newBoardData = "";
+      console.log(boardData);
+      for(var i = 0; i < cellCoords.length; i++) {
+        console.log(cellCoords[i]);
+        boardData[cellCoords[i]] = "1";
+      }
+      boardData.forEach(element => {
+        newBoardData += element.valueOf();
+      });        
+      resolve(newBoardData);
     });
   }
 
@@ -228,7 +365,7 @@ export class GameboardComponent implements OnInit {
     this.showShipPlacement(cell.getAttributeNS(null, 'id'), this.shipSize, false);
   }
 
-  buildShips(id, shipSize): Promise<any> {
+  executeGame(id, shipSize): Promise<any> {
     // sexy algorithm time
     // here we will check if they are in a valid position to place a ship
     // once a ship is placed, interate to the next one and use same logic with different length
@@ -403,5 +540,15 @@ export class GameboardComponent implements OnInit {
     catch(err) {
 
     }
+  }
+
+  setShips() {
+    this.shipLocations.forEach((shipCell) => {
+      document.getElementById(shipCell).setAttributeNS(null, 'fill', '#87C540');
+    });
+  }
+
+  getOpposingPlayerBoard() {
+
   }
 }

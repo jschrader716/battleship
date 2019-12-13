@@ -94,7 +94,7 @@ export class ChatComponent implements OnInit {
 
   challenge(user) {
     var curUser = this.cognitoService.getCurrentUser().then((userData) => {
-      // if(user.username != userData.username) {
+      if(user.username != userData.username) {
 
         let gameData = {
           player_1: user.username, // challengee
@@ -102,7 +102,10 @@ export class ChatComponent implements OnInit {
         }
 
         this.challengeOpponent.emit(gameData);
-      // }
+      }
+      else {
+        this.alertService.toastMessageError("Can't challenge yourself...");
+      }
     });
   }
 }

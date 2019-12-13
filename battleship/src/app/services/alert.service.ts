@@ -104,4 +104,32 @@ export class AlertService {
       }
     )
   }
+
+  toastMessageSuccess(message) {
+    swalChallenge.fire(
+      {
+        title: message,
+        toast: true,
+        icon: 'success',
+        timer: 5000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        position: 'bottom-end'
+      }
+    )
+  }
+
+  toastMessageError(message) {
+    swalChallenge.fire(
+      {
+        title: message,
+        toast: true,
+        icon: 'error',
+        timer: 5000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        position: 'bottom-end'
+      }
+    )
+  }
 }

@@ -17,6 +17,7 @@ export class LobbyComponent implements OnInit {
   public user: string; 
   private challengers: ChallengeRecord[] = [];
   private challengerHeartbeat;
+  private checkChallengeResponse;
 
   constructor(
     private authService: AuthService, 
@@ -40,8 +41,30 @@ export class LobbyComponent implements OnInit {
     this.cognitoService.getCurrentUser().then((data) => {
       this.user = data.username;
 
+      // this.checkChallengeResponse = setInterval(() => {
+        this.dataService.getChallengeResponses(this.user).then((gameDataStart: any) => {
+          // someone somewhere in the world must have accepted the game
+          console.log(gameDataStart);
+
+          if(gameDataStart.length > 0) {
+            var newUserData = {
+              username: this.user,
+              login: true,
+              gameroom_id: gameDataStart[0].id
+            }
+
+            this.dataService.updateUser(newUserData).then(() => {
+              this.router.navigate(['/game'], {
+                // forgive my crappy attempt to obfuscate some data from the user hahaha
+                queryParams: { flim: gameDataStart[0].id }
+              });
+            })
+          }
+        });
+      // }, 2000);
+
       // this.challengerHeartbeat = setInterval(() => {
-      this.checkChallenges();
+        this.checkChallenges();
       // }, 5000);
     });
   }
@@ -49,6 +72,9 @@ export class LobbyComponent implements OnInit {
   ngOnDestroy() {
     if (this.challengerHeartbeat) {
       clearInterval(this.challengerHeartbeat);
+    }
+    if (this.checkChallengeResponse) {
+      clearInterval(this.checkChallengeResponse);
     }
   }
 
@@ -62,8 +88,6 @@ export class LobbyComponent implements OnInit {
         losses: 0,
         gameroom_id: null
       }
-
-      console.log("LOGOOUT DATA: ", logoutData);
 
       this.dataService.deleteAllGames(data.username).then(() => {
         this.dataService.updateUser(logoutData).then((data) => {
@@ -86,7 +110,9 @@ export class LobbyComponent implements OnInit {
   }
 
   requestChallenge(gameData) {
-    this.dataService.createGame(gameData).subscribe((data) => {},
+    this.dataService.createGame(gameData).subscribe((data) => {
+      this.alertService.toastMessageSuccess("Game Invite Sent");
+    },
     (err) => {
       console.log("Failed to create game");
     })

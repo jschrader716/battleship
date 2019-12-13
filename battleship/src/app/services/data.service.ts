@@ -34,6 +34,14 @@ export class DataService {
     });
   }
 
+  getChallengeResponses(username) {
+    return new Promise((resolve) => {
+      this.http.get(this.environment.apiUrl + '/game', { params: { challenger: username } }).subscribe((data) => {
+        resolve(data);
+      });
+    });
+  }
+
   getChallenges(username) {
     return new Promise((resolve) => {
       this.http.get(this.environment.apiUrl + '/game', { params: { username: username } }).subscribe((data) => {
@@ -71,9 +79,9 @@ export class DataService {
   //=============================================================================================================
   // GAME BOARD API FUNCTIONS
   //=============================================================================================================
-  getBoardState(id): Promise<any> {
+  getBoardState(boardInfo): Promise<any> {
     return new Promise((resolve) => {
-      this.http.get(this.environment.apiUrl + '/game/board', { params: { board_id: id } }).subscribe((data) => {
+      this.http.get(this.environment.apiUrl + '/game/board', { params: { id: boardInfo.id, player: boardInfo.player } }).subscribe((data) => {
         resolve(data);
       });
     });
@@ -90,11 +98,6 @@ export class DataService {
       });
     });
   }
-
-  getTurn() {
-
-  }
-
 
   //=============================================================================================================
   // CHAT API FUNCTIONS
