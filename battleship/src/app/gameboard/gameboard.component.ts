@@ -40,6 +40,7 @@ export class GameboardComponent implements OnInit {
     private shipsPlaced: boolean = false;
     private shipLocations: string[] = [];
     private getBoard;
+    private showTurnMessage: boolean = true;
     public playerUsername: string = "";
     public oppPlayerUsername: string = "";
 
@@ -204,7 +205,7 @@ export class GameboardComponent implements OnInit {
                     this.setShips();
 
                     // this.getBoard = setInterval(() => {
-                      this.getTurn(this.playerUsername);
+                      this.updateGameInfoAndTurn(this.playerUsername);
                     // }, 2000);
                     if(this.playerTurn === true) {
                       this.alertService.success("Your turn");
@@ -215,7 +216,7 @@ export class GameboardComponent implements OnInit {
             }
             else {
               // ships are placed, updated board state, and turn identified, now what?
-              this.getTurn(this.playerUsername);
+              this.updateGameInfoAndTurn(this.playerUsername);
               if(this.playerTurn === true) {
                 this.fireMissile(cell.getAttributeNS(null, 'id')).then((data) => {
                   console.log("LAUNCH TORPEDO");
@@ -268,7 +269,7 @@ export class GameboardComponent implements OnInit {
     });
   }
 
-  getTurn(username) {
+  updateGameInfoAndTurn(username) {
     this.dataService.getGameState(this.gameId).then((gameInfo) => {
       this.gameData = new ChallengeRecord(gameInfo[0]);
 
@@ -285,14 +286,16 @@ export class GameboardComponent implements OnInit {
 
       this.dataService.getBoardState(boardInfo).then((boardData) => {
         this.boardState = new BoardState(boardData[0]);
-        console.log("TURN BOARD DATA: ", boardData[0]);
 
         if((username == this.gameData.player_1 && this.boardState.turn == 1) || (username == this.gameData.player_2 && this.boardState.turn == 2)) {
-          console.log("Player's turn");
+          if(this.showTurnMessage) {
+            this.alertService.success("Your Turn");
+          }
+          this.showTurnMessage = false;
           this.playerTurn = true;
         }
         else {
-          console.log("NOT Player's turn");
+          this.showTurnMessage = true;
           this.playerTurn = false;
         }
       })
