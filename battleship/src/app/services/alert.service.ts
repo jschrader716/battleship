@@ -119,6 +119,20 @@ export class AlertService {
     )
   }
 
+  toastHit(hit) {
+    swalChallenge.fire(
+      {
+        title: (hit) ? "HIT!" : "MISS!",
+        toast: true,
+        icon: (hit) ? 'success' : 'warning',
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        position: 'center'
+      }
+    )
+  }
+
   toastMessageError(message) {
     swalChallenge.fire(
       {

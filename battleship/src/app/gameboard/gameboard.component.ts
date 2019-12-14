@@ -204,9 +204,9 @@ export class GameboardComponent implements OnInit {
                   this.prepareBoard(this.shipLocations).then((data) => {
                     this.setShips();
 
-                    // this.getBoard = setInterval(() => {
+                    this.getBoard = setInterval(() => {
                       this.updateGameInfoAndTurn(this.playerUsername);
-                    // }, 2000);
+                    }, 2000);
                     if(this.playerTurn === true) {
                       this.alertService.success("Your turn");
                     }
@@ -221,6 +221,28 @@ export class GameboardComponent implements OnInit {
                 this.fireMissile(cell.getAttributeNS(null, 'id')).then((data) => {
                   console.log("LAUNCH TORPEDO");
                   console.log(data);
+                  if(data === "HIT") {
+                    // tell client we hit
+                    this.alertService.toastHit(true);
+                    var explosion = document.createElementNS(this.svgns, 'image');
+                    explosion.setAttributeNS(null, 'href', '../../assets/images/explosion.svg');
+                    explosion.setAttributeNS(null, 'x', cell.getAttributeNS(null, 'x'));
+                    explosion.setAttributeNS(null, 'y', cell.getAttributeNS(null, 'y'));
+                    explosion.setAttributeNS(null, 'width', cell.getAttributeNS(null, 'width'));
+                    explosion.setAttributeNS(null, 'height', cell.getAttributeNS(null, 'height'));
+                    game.appendChild(explosion);
+                  }
+                  else {
+                    // tell client we missed
+                    this.alertService.toastHit(false);
+                    var whiff = document.createElementNS(this.svgns, 'image');
+                    whiff.setAttributeNS(null, 'href', '../../assets/images/smoke.png');
+                    whiff.setAttributeNS(null, 'x', cell.getAttributeNS(null, 'x'));
+                    whiff.setAttributeNS(null, 'y', cell.getAttributeNS(null, 'y'));
+                    whiff.setAttributeNS(null, 'width', cell.getAttributeNS(null, 'width'));
+                    whiff.setAttributeNS(null, 'height', cell.getAttributeNS(null, 'height'));
+                    game.appendChild(whiff);
+                  }
                   this.playerTurn = false;
                 });
               }
