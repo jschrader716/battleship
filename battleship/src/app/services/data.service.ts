@@ -65,7 +65,6 @@ export class DataService {
         resolve(data);
       });
     });
-
   }
 
   deleteAllGames(username): Promise<any> {
@@ -94,6 +93,15 @@ export class DataService {
   updateBoardState(body): Promise<any> {
     return new Promise((resolve) => {
       this.http.put(this.environment.apiUrl + '/game/board', body, httpOptions).subscribe((data) => {
+        resolve(data);
+      });
+    });
+  }
+
+  deleteBoard(boardId): Promise<any> {
+    return new Promise((resolve) => {
+      this.http.delete(this.environment.apiUrl + '/game/board', { params: { id: boardId } }).subscribe((data) => {
+        console.log("DELETION DATA: ", data);
         resolve(data);
       });
     });

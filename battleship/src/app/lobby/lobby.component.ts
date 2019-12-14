@@ -41,7 +41,7 @@ export class LobbyComponent implements OnInit {
     this.cognitoService.getCurrentUser().then((data) => {
       this.user = data.username;
 
-      // this.checkChallengeResponse = setInterval(() => {
+      this.checkChallengeResponse = setInterval(() => {
         this.dataService.getChallengeResponses(this.user).then((gameDataStart: any) => {
           // someone somewhere in the world must have accepted the game
           console.log(gameDataStart);
@@ -61,11 +61,11 @@ export class LobbyComponent implements OnInit {
             })
           }
         });
-      // }, 2000);
+      }, 2000);
 
-      // this.challengerHeartbeat = setInterval(() => {
+      this.challengerHeartbeat = setInterval(() => {
         this.checkChallenges();
-      // }, 5000);
+      }, 5000);
     });
   }
 

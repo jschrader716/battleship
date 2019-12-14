@@ -95,6 +95,24 @@ export class AlertService {
     })
   }
 
+  playerWins(didWin: boolean): Promise<any> {
+    return new Promise((resolve) => {
+      swalChallenge.fire(
+        {
+          title: (didWin) ? 'Winner!' : "You Lost!",
+          html: (didWin) ? "Congratulations! You have won this round of battleship!" : "Better luck next time!",
+          icon: (didWin) ? 'success' : 'warning',
+          confirmButtonText: 'Navigate Back to Lobby'
+        }
+      ).then((result) => {
+        resolve(result);
+      })
+      .catch((err) => {
+        console.log("Winner message failed");
+      })
+    });
+  }
+
   setShipsAlert() {
     swalChallenge.fire(
       {

@@ -65,7 +65,7 @@ export class ChatComponent implements OnInit {
           console.log("Error when grabbing user info in chat");
         })
 
-        // this.messengerHeartbeat = setInterval(() => { 
+        this.messengerHeartbeat = setInterval(() => { 
           this.messages = [];
           var chatString = "";
           
@@ -78,7 +78,7 @@ export class ChatComponent implements OnInit {
             });
             this.buildUserList(game_id);
           });
-        // }, 2000);
+        }, 2000);
 
       })
       .catch((err) => {

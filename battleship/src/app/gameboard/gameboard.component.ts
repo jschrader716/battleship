@@ -262,6 +262,87 @@ export class GameboardComponent implements OnInit {
     });
   }
 
+  checkWinCondition() {
+    if(this.boardState.game_terminated != null && this.boardState.game_terminated != undefined) {
+      if(this.boardState.game_terminated == 1) {
+        clearInterval(this.getBoard);
+        // only one person has to destroy the game
+
+        // are we player 1?
+        if(this.playerUsername === this.gameData.player_1) {
+          
+          this.alertService.playerWins(true).then((data) => {
+            // destroy game
+            this.destroyGame().then((data) => {
+              // navigate back to lobby
+              if(data != null && data != undefined) {
+                this.router.navigate(['/lobby']);
+              }
+            });
+          });
+        }
+        else {
+          this.alertService.playerWins(false).then((data) => {
+            this.router.navigate(['/lobby']);
+          });
+        }
+      }
+      else {
+        clearInterval(this.getBoard);
+
+        // are we player 2?
+        if(this.playerUsername === this.gameData.player_2) {
+          this.alertService.playerWins(true).then((data) => {
+            // destroy game
+            this.destroyGame().then((data) => {
+              // navigate back to lobby
+              if(data != null && data != undefined) {
+                this.router.navigate(['/lobby']);
+              }
+            });
+          });
+        }
+        else {
+          this.alertService.playerWins(false).then((data) => {
+            this.router.navigate(['/lobby']);
+          });
+        }
+      }
+    }
+  }
+
+  destroyGame(): Promise<any> {
+    return new Promise((resolve) => {
+      var newUserData = {
+        players: { player_1: this.gameData.player_1, player_2: this.gameData.player_2},
+        login: true,
+        gameroom_id: 0
+      }
+      // update user
+        this.dataService.updateUser(newUserData).then((userData) => {
+          console.log("USER DATA UPDATED: ", userData);
+          // delete game
+          this.dataService.deleteGameById(this.gameId).then((gameData) => {
+            console.log("GAME DATA DELETION: ", gameData);
+            // delete board
+            this.dataService.deleteBoard(this.boardId).then((boardData) => {
+              console.log("BOARD DATA DELETION: ", boardData);
+              resolve(true);
+            });
+          })
+          .catch((err) => {
+            console.log("failed to delete game upon game completion");
+          })
+        })
+        .catch((err) => {
+          console.log("failed to update user upon game completion");
+        })
+        
+  
+          
+    });
+  }
+
   fireMissile(missile):Promise<any> {
     return new Promise((resolve) => {
       var fireInfo = {};
@@ -308,6 +389,9 @@ export class GameboardComponent implements OnInit {
 
       this.dataService.getBoardState(boardInfo).then((boardData) => {
         this.boardState = new BoardState(boardData[0]);
+
+        // check win status
+        this.checkWinCondition();
 
         if((username == this.gameData.player_1 && this.boardState.turn == 1) || (username == this.gameData.player_2 && this.boardState.turn == 2)) {
           if(this.showTurnMessage) {
