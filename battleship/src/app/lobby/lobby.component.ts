@@ -5,6 +5,7 @@ import { DataService } from '../services/data.service';
 import { CognitoService } from '../services/cognito.service';
 import { AlertService } from '../services/alert.service';
 import { ChallengeRecord } from '../models/challengeRecord';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
 
 
 @Component({
@@ -24,10 +25,12 @@ export class LobbyComponent implements OnInit {
     private router: Router, 
     private dataService: DataService, 
     private cognitoService: CognitoService, 
-    private alertService: AlertService) 
+    private alertService: AlertService,
+    private ngxService: NgxUiLoaderService) 
     { }
 
   ngOnInit() {
+    this.ngxService.start();
 
     this.authService.isAuthenticated().then((data) => {
       if(data == true) {
@@ -44,7 +47,6 @@ export class LobbyComponent implements OnInit {
       this.checkChallengeResponse = setInterval(() => {
         this.dataService.getChallengeResponses(this.user).then((gameDataStart: any) => {
           // someone somewhere in the world must have accepted the game
-          console.log(gameDataStart);
 
           if(gameDataStart.length > 0) {
             var newUserData = {
@@ -61,6 +63,10 @@ export class LobbyComponent implements OnInit {
             })
           }
         });
+      }, 2000);
+
+      setTimeout(() => {
+        this.ngxService.stop();
       }, 2000);
 
       this.challengerHeartbeat = setInterval(() => {
@@ -109,6 +115,7 @@ export class LobbyComponent implements OnInit {
 
   }
 
+  // called when user is clicked on in chat list
   requestChallenge(gameData) {
     this.dataService.createGame(gameData).subscribe((data) => {
       this.alertService.toastMessageSuccess("Game Invite Sent");

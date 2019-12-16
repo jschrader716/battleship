@@ -1,5 +1,7 @@
-<button (click)="logout()">Logout</button>
-<div class="page-content">
+<div ngxUiLoaderBlurred blur="15" class="page-content">
+    <div class="logout-wrapper" ngxUiLoaderBlurred blur="15">
+            <button (click)="logout()">Logout</button>
+    </div>
     <h1>Battleship (Main Lobby)</h1>
     <h3>Logged in as: {{user}}</h3>
     <app-chat (challengeOpponent)=requestChallenge($event)></app-chat>

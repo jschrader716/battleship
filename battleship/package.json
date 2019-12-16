@@ -25,6 +25,7 @@
     "aws-sdk": "^2.563.0",
     "jsonwebtoken": "^8.5.1",
     "jwthelper": "0.0.4",
+    "ngx-ui-loader": "^8.0.0",
     "rxjs": "~6.4.0",
     "sweetalert2": "^9.2.0",
     "tslib": "^1.10.0",

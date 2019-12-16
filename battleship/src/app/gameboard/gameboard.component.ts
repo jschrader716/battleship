@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
 
 import { AuthService } from '../services/auth.service';
 import { DataService } from '../services/data.service';
@@ -9,7 +10,12 @@ import { CognitoService } from '../services/cognito.service';
 import { GameInfo } from '../models/gameinfo';
 import { BoardState } from '../models/boardstate';
 import { ChallengeRecord } from '../models/challengeRecord'
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+
+const hoverColor = '#F56566'
+const shipColor = '#5B7742';
+const shipPlacementColor = '#9FA4A7';
+const cellDefaultColor = '#55697A';
+const gridStrokeColor = '#6B0F15';
 
 @Component({
   selector: 'app-gameboard',
@@ -49,7 +55,9 @@ export class GameboardComponent implements OnInit {
     private dataService: DataService,
     private route: ActivatedRoute,
     private alertService: AlertService,
-    private cognitoService: CognitoService) { 
+    private cognitoService: CognitoService,
+    private ngxService: NgxUiLoaderService) { 
+
     this.rows = this.gameInfo.rows;
     this.cols = this.gameInfo.cols;
     this.svgns = this.gameInfo.svgns;
@@ -61,76 +69,80 @@ export class GameboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.shipSize = this.shipSizeList[0];
-
-    document.addEventListener('keypress', (keypress) => {
-      if(keypress.keyCode == 114) {
-        (this.position === 'horizontal') ? this.position = 'vertical' : this.position = 'horizontal'; 
-        
-        this.wipeHoverShip(this.hoverId, this.position, this.shipSize);
-        this.showShipPlacement(this.hoverId, this.shipSize, true);
-      }
-    });
 
     this.authService.isAuthenticated().then((data) => {
-      if(data == true) {
+      if(data === true) {
+        this.ngxService.start();
+      } 
+      this.shipSize = this.shipSizeList[0];
 
-        this.cognitoService.getCurrentUser().then((data) => {
-          this.playerUsername = data.username;
-          this.route.queryParams.subscribe(params => {
-            this.gameId = params.flim;
-  
-            this.dataService.getGameState(this.gameId).then((data) => {
-              this.gameData = new ChallengeRecord(data[0]);
-              this.boardId = this.gameData.board_id;
+      document.addEventListener('keypress', (keypress) => {
+        if(keypress.keyCode == 114) {
+          (this.position === 'horizontal') ? this.position = 'vertical' : this.position = 'horizontal'; 
+          
+          this.wipeHoverShip(this.hoverId, this.position, this.shipSize);
+          this.showShipPlacement(this.hoverId, this.shipSize, true);
+        }
+      });
 
-              var boardInfo = {
-                "id" : this.boardId
-              }
-     
-              if(this.playerUsername === this.gameData.player_1) {
-                boardInfo['player'] = 1;
+      this.cognitoService.getCurrentUser().then((data) => {
+        this.playerUsername = data.username;
+        this.route.queryParams.subscribe(params => {
+          this.gameId = params.flim;
+
+          this.dataService.getGameState(this.gameId).then((data) => {
+            this.gameData = new ChallengeRecord(data[0]);
+            this.boardId = this.gameData.board_id;
+
+            var boardInfo = {
+              "id" : this.boardId
+            }
+    
+            if(this.playerUsername === this.gameData.player_1) {
+              boardInfo['player'] = 1;
+            }
+            else {
+              boardInfo['player'] = 2;
+            }
+
+            this.dataService.getBoardState(boardInfo).then((data) => {
+
+              this.boardState = new BoardState(data[0]);
+
+              if(this.playerUsername === this.gameData.player_1 && this.boardState.turn == 1) {
+                this.playerTurn = true;
+                this.oppPlayerUsername = this.gameData.player_2;
               }
               else {
-                boardInfo['player'] = 2;
+                this.oppPlayerUsername = this.gameData.player_1;
               }
-  
-              this.dataService.getBoardState(boardInfo).then((data) => {
-                this.boardState = new BoardState(data[0]);
+              this.ngxService.stop();
 
-                if(this.playerUsername === this.gameData.player_1 && this.boardState.turn == 1) {
-                  this.playerTurn = true;
-                  this.oppPlayerUsername = this.gameData.player_2;
-                }
-                else {
-                  this.oppPlayerUsername = this.gameData.player_1;
-                }
-
-                console.log(this.boardState);
-                this.boardSetup();
-                // after initial board setup, tell players to set their pieces
+              if(this.boardState.board_state.split("").includes('1')) {
+                this.shipsPlaced = true;
+                this.highLight = false;
+              }
+              this.boardSetup();
+              // after initial board setup, tell players to set their pieces
+              setTimeout(() => {
                 this.alertService.setShipsAlert();
-              })
-              .catch((err) =>{
-                console.log("Failure to retreive board state")
-                console.log(err);
-              });
+              }, 1000);
             })
-            .catch((err) => {
-              console.log("Failure to retreive game state");
+            .catch((err) =>{
+              console.log("Failure to retreive board state")
             });
-          }, 
-          (err) => {
-            console.log("Failed to fill parameters in route");
+          })
+          .catch((err) => {
+            console.log("Failure to retreive game state");
           });
-        })
-        .catch((err) => {
-          console.log("Failed to retrieve user info");
-        })
-      }
-      else {
-        this.router.navigate(['/login']);
-      }
+        }, 
+        (err) => {
+          console.log("Failed to fill parameters in route");
+        });
+      })
+      .catch((err) => {
+        console.log("Failed to retrieve user info");
+      })
     });
   }
 
@@ -138,10 +150,6 @@ export class GameboardComponent implements OnInit {
     if (this.getBoard) {
       clearInterval(this.getBoard);
     }
-  }
-
-  ngDoCheck() {
-
   }
 
   boardSetup(){
@@ -157,21 +165,35 @@ export class GameboardComponent implements OnInit {
     
     document.getElementsByTagName('svg')[0].appendChild(game);
 
+    this.resetBoard();
+
+    // update board after setup
+    this.getBoard = setInterval(() => {
+      this.updateGameInfoAndTurn(this.playerUsername);
+    }, 2000);
+  }
+
+  resetBoard() {
+
+    var game = document.getElementsByTagName('g')[0];
+    
     var xCellCoord = 0;
     var yCellCoord = 0;
     var cellId = 1;
     this.boardState.board_state_obj.forEach(row => {
       row.forEach(element => {
         var cell = document.createElementNS(this.svgns,'rect');
-        cell.setAttributeNS(null, 'stroke', 'red');
-        cell.setAttributeNS(null, 'fill', '#55697A');
+
+        cell.setAttributeNS(null, 'id', cellId.toString());
+        cell.setAttributeNS(null, 'stroke', gridStrokeColor);
         cell.setAttributeNS(null, 'width', this.cellsize + 'px');
         cell.setAttributeNS(null, 'height', this.cellsize + 'px');
-        cell.setAttributeNS(null, 'x', this.cellsize * xCellCoord + 75 + 'px');
-        cell.setAttributeNS(null, 'y', this.cellsize * yCellCoord + 75 + 'px');
+        cell.setAttributeNS(null, 'x', this.cellsize * xCellCoord + 25 + 'px');
+        cell.setAttributeNS(null, 'y', this.cellsize * yCellCoord + 25 + 'px');
         cell.setAttributeNS(null, 'class', 'cell');
-        cell.setAttributeNS(null, 'id', cellId.toString());
         cell.setAttributeNS(null, 'cursor', 'crosshair');
+
+        this.determineFill(cell);
 
         // foundation functions for building ships
         cell.addEventListener("mouseover", this.highlightShipArea.bind(this));
@@ -184,13 +206,11 @@ export class GameboardComponent implements OnInit {
             if(this.shipsPlaced === false) {
               if(data != null) { // then we want to permanently color the pieces and update the cell array
 
-                if(this.shipsPlaced === false)  {
-                  data.forEach(element => {
-                    document.getElementById(element).setAttributeNS(null, 'name', 'spaceTaken');
-                    document.getElementById(element).setAttributeNS(null, 'fill', '#9FA4A7');
-                    this.shipLocations.push(element);
-                  });
-                }
+                data.forEach(element => {
+                  document.getElementById(element).setAttributeNS(null, 'name', 'spaceTaken');
+                  document.getElementById(element).setAttributeNS(null, 'fill', shipPlacementColor);
+                  this.shipLocations.push(element);
+                });
   
                 let curShip = this.shipSizeList.indexOf(this.shipSize);
   
@@ -204,9 +224,6 @@ export class GameboardComponent implements OnInit {
                   this.prepareBoard(this.shipLocations).then((data) => {
                     this.setShips();
 
-                    this.getBoard = setInterval(() => {
-                      this.updateGameInfoAndTurn(this.playerUsername);
-                    }, 2000);
                     if(this.playerTurn === true) {
                       this.alertService.success("Your turn");
                     }
@@ -215,12 +232,10 @@ export class GameboardComponent implements OnInit {
               }
             }
             else {
-              // ships are placed, updated board state, and turn identified, now what?
+              // ships are placed, updated board state, and turn identified
               this.updateGameInfoAndTurn(this.playerUsername);
               if(this.playerTurn === true) {
                 this.fireMissile(cell.getAttributeNS(null, 'id')).then((data) => {
-                  console.log("LAUNCH TORPEDO");
-                  console.log(data);
                   if(data === "HIT") {
                     // tell client we hit
                     this.alertService.toastHit(true);
@@ -260,6 +275,43 @@ export class GameboardComponent implements OnInit {
       yCellCoord++;
       xCellCoord = 0;
     });
+  }
+
+  determineFill(cell) {
+    var boardArr = this.boardState.board_state.split("");
+    // check for different values to determine fill
+    var cellValue = boardArr[Number(cell.getAttributeNS(null, 'id') - 1)];
+    switch(cellValue) {
+      case '1':
+        cell.setAttributeNS(null, 'fill', shipColor);
+        cell.setAttributeNS(null, 'name', 'spaceTaken');
+        break;
+      case '2':
+        // check the existance of already placed image so we don't create duplicates
+        var idCheck = document.getElementById(cell.getAttributeNS(null, 'x').replace('px', '') + cell.getAttributeNS(null, 'y').replace('px', ''));
+        if(idCheck != null && idCheck != undefined) {
+          // must exist. do nothing
+          break;
+        }
+        else {
+          // insert our image
+          var hitShip = document.createElementNS(this.svgns, 'image');
+          hitShip.setAttributeNS(null, 'href', '../../assets/images/redX.png');
+          hitShip.setAttributeNS(null, 'x', cell.getAttributeNS(null, 'x'));
+          hitShip.setAttributeNS(null, 'y', cell.getAttributeNS(null, 'y'));
+          hitShip.setAttributeNS(null, 'width', cell.getAttributeNS(null, 'width'));
+          hitShip.setAttributeNS(null, 'height', cell.getAttributeNS(null, 'height'));
+          hitShip.setAttributeNS(null, 'id', hitShip.getAttributeNS(null, 'x').replace('px', '') + hitShip.getAttributeNS(null, 'y').replace('px', '') );
+          document.getElementsByTagName('g')[0].appendChild(hitShip);
+          cell.setAttributeNS(null, 'fill', hoverColor);
+        }
+        break;
+      default:
+        if(null) {
+
+        }
+        cell.setAttributeNS(null, 'fill', cellDefaultColor);
+    }
   }
 
   checkWinCondition() {
@@ -316,7 +368,6 @@ export class GameboardComponent implements OnInit {
       var newUserData = {
         players: { player_1: this.gameData.player_1, player_2: this.gameData.player_2},
         login: true,
-        gameroom_id: 0
       }
       // update user
         this.dataService.updateUser(newUserData).then((userData) => {
@@ -337,9 +388,6 @@ export class GameboardComponent implements OnInit {
         .catch((err) => {
           console.log("failed to update user upon game completion");
         })
-        
-  
-          
     });
   }
 
@@ -373,6 +421,8 @@ export class GameboardComponent implements OnInit {
   }
 
   updateGameInfoAndTurn(username) {
+    // document.getElementsByTagName('g')[0].innerHTML = "";
+    // this.resetBoard();
     this.dataService.getGameState(this.gameId).then((gameInfo) => {
       this.gameData = new ChallengeRecord(gameInfo[0]);
 
@@ -389,6 +439,15 @@ export class GameboardComponent implements OnInit {
 
       this.dataService.getBoardState(boardInfo).then((boardData) => {
         this.boardState = new BoardState(boardData[0]);
+
+        // converting nodelist to array
+        // filtering out anything that is not a rect in the group 
+        var allCells = document.getElementsByTagName('g')[0].childNodes;
+        var allCellsArr = Array.prototype.slice.call(allCells);
+        var onlyRects = allCellsArr.filter(element => element.tagName != 'image');
+        onlyRects.forEach((cell) => {
+          this.determineFill(document.getElementById(cell.id));
+        });
 
         // check win status
         this.checkWinCondition();
@@ -419,7 +478,7 @@ export class GameboardComponent implements OnInit {
       // split the info into array, change what is needed, then put string back together and send it up
       if(this.playerUsername == this.gameData.player_1) {
         var splitBoard = this.boardState.board_state.split('');
-        this.buildBoard(splitBoard, shipCoordsList).then((data) =>{
+        this.buildShips(splitBoard, shipCoordsList).then((data) =>{
           body['player'] = '1';
           body.board_state = data;
 
@@ -433,7 +492,7 @@ export class GameboardComponent implements OnInit {
       }
       else {
         var splitBoard = this.boardState.board_state.split('');
-        this.buildBoard(splitBoard, shipCoordsList).then((data) =>{
+        this.buildShips(splitBoard, shipCoordsList).then((data) =>{
           body['player'] = '2';
           body.board_state = data;
 
@@ -448,10 +507,9 @@ export class GameboardComponent implements OnInit {
     });
   }
 
-  buildBoard(boardData, cellCoords): Promise<any> {
+  buildShips(boardData, cellCoords): Promise<any> {
     return new Promise((resolve) => {
       var newBoardData = "";
-      console.log(boardData);
       for(var i = 0; i < cellCoords.length; i++) {
         console.log(cellCoords[i]);
         boardData[cellCoords[i]] = "1";
@@ -479,71 +537,74 @@ export class GameboardComponent implements OnInit {
     // here we will check if they are in a valid position to place a ship
     // once a ship is placed, interate to the next one and use same logic with different length
     return new Promise((resolve) => {
-      try {
+      if(this.shipsPlaced != true) {
+        try {
 
-        var shipArray = [];
-        var halfShipLength = Math.floor(shipSize/2);
-        var shipPart = id;
-
-        if(this.position === 'horizontal') {
-          shipArray.push(document.getElementById(shipPart).id);
-
-          for(var i = 0; i < halfShipLength; i++) {
-            shipPart = (Number(id) - (i + 1));
-            if(shipPart%10 === 0) {
-              this.alertService.error("Invalid Ship Placement");
-              shipArray.push(null);
-            }
-            else {
-              shipArray.push(document.getElementById(shipPart).id);
-            }
-
-            shipPart = (Number(id) + (i + 1));
-            if(shipPart%10 === 1) {
-              this.alertService.error("Invalid Ship Placement");
-              shipArray.push(null);
-            }
-            else {
-              shipArray.push(document.getElementById(shipPart).id);
-            }
-          }
-        }
-        else {
-          shipArray.push(document.getElementById(shipPart).id);
-
-          for(var i = 0; i < halfShipLength; i++) {
-            shipPart = (Number(id) - ((i + 1) * 10));
+          var shipArray = [];
+          var halfShipLength = Math.floor(shipSize/2);
+          var shipPart = id;
+  
+          if(this.position === 'horizontal') {
             shipArray.push(document.getElementById(shipPart).id);
-
-            shipPart = (Number(id) + ((i + 1) * 10));
-            shipArray.push(document.getElementById(shipPart).id);
-          }
-        }
-
-        var cleanShip = true;
-        shipArray.forEach(element => {
-          // if we get a null value we know that the ship is not in a valid spot so we can't update the db just yet
-          if(element != null) {
-            return;
+  
+            for(var i = 0; i < halfShipLength; i++) {
+              shipPart = (Number(id) - (i + 1));
+              if(shipPart%10 === 0) {
+                this.alertService.error("Invalid Ship Placement");
+                shipArray.push(null);
+              }
+              else {
+                shipArray.push(document.getElementById(shipPart).id);
+              }
+  
+              shipPart = (Number(id) + (i + 1));
+              if(shipPart%10 === 1) {
+                this.alertService.error("Invalid Ship Placement");
+                shipArray.push(null);
+              }
+              else {
+                shipArray.push(document.getElementById(shipPart).id);
+              }
+            }
           }
           else {
-            cleanShip = false;
-            this.alertService.error("Invalid Ship Placement!");
-            return;
+            shipArray.push(document.getElementById(shipPart).id);
+  
+            for(var i = 0; i < halfShipLength; i++) {
+              shipPart = (Number(id) - ((i + 1) * 10));
+              shipArray.push(document.getElementById(shipPart).id);
+  
+              shipPart = (Number(id) + ((i + 1) * 10));
+              shipArray.push(document.getElementById(shipPart).id);
+            }
           }
-        });
-
-        if(cleanShip) {
-          resolve(shipArray);
+  
+          var cleanShip = true;
+          shipArray.forEach(element => {
+            // if we get a null value we know that the ship is not in a valid spot so we can't update the db just yet
+            if(element != null) {
+              return;
+            }
+            else {
+              cleanShip = false;
+              this.alertService.error("Invalid Ship Placement!");
+              return;
+            }
+          });
+  
+          if(cleanShip) {
+            resolve(shipArray);
+          }
+        }
+        catch(err) {
+          this.alertService.error("Invalid Ship Placement");
+          resolve(null);
         }
       }
-      catch(err) {
-        this.alertService.error("Invalid ship placement");
-        resolve(null);
+      else {
+        resolve();
       }
     });
-
-
   }
 
   showShipPlacement(id, shipSize, visible) {
@@ -557,33 +618,33 @@ export class GameboardComponent implements OnInit {
       if(visible) {
         if(shipSize == 1) {
           if(document.getElementById(id).getAttributeNS(null, 'name') != 'spaceTaken') {
-            document.getElementById(id).setAttributeNS(null, 'fill', 'red');
+            document.getElementById(id).setAttributeNS(null, 'fill', hoverColor);
           }
         }
         else {
           if(this.position === 'horizontal') {
             for(var i = 0; i < halfShipLength; i++) {
               if(document.getElementById(id).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById(id).setAttributeNS(null, 'fill', 'red');
+                document.getElementById(id).setAttributeNS(null, 'fill', hoverColor);
               }
               if(document.getElementById((Number(id) - (i + 1)).toString()).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', 'red');
+                document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', hoverColor);
               }
               if(document.getElementById((Number(id) + (i + 1)).toString()).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', 'red');
+                document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', hoverColor);
               }
             }
           }
           else {
             for(var i = 0; i < halfShipLength; i++) {
               if(document.getElementById(id).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById(id).setAttributeNS(null, 'fill', 'red');
+                document.getElementById(id).setAttributeNS(null, 'fill', hoverColor);
               }
               if(document.getElementById((Number(id) - ((i + 1) * 10)).toString()).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', 'red');
+                document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', hoverColor);
               }
               if(document.getElementById((Number(id) + ((i + 1) * 10)).toString()).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', 'red');
+                document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', hoverColor);
               }
             }
           }
@@ -592,33 +653,33 @@ export class GameboardComponent implements OnInit {
       else {
         if(shipSize == 1) {
           if(document.getElementById(id).getAttributeNS(null, 'name') != 'spaceTaken') {
-            document.getElementById(id).setAttributeNS(null, 'fill', '#55697A');
+            document.getElementById(id).setAttributeNS(null, 'fill', cellDefaultColor);
           }
         }
         else {
           if(this.position === 'horizontal') {
             for(var i = 0; i < halfShipLength; i++) {
               if(document.getElementById(id).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById(id).setAttributeNS(null, 'fill', '#55697A');
+                document.getElementById(id).setAttributeNS(null, 'fill', cellDefaultColor);
               }
               if(document.getElementById((Number(id) - (i + 1)).toString()).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', '#55697A');
+                document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', cellDefaultColor);
               }
               if(document.getElementById((Number(id) + (i + 1)).toString()).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', '#55697A');
+                document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', cellDefaultColor);
               }
             }
           }
           else {
             for(var i = 0; i < halfShipLength; i++) {
               if(document.getElementById(id).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById(id).setAttributeNS(null, 'fill', '#55697A');
+                document.getElementById(id).setAttributeNS(null, 'fill', cellDefaultColor);
               }
               if(document.getElementById((Number(id) - ((i + 1) * 10)).toString()).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', '#55697A');
+                document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', cellDefaultColor);
               }
               if(document.getElementById((Number(id) + ((i + 1) * 10)).toString()).getAttributeNS(null, 'name') != 'spaceTaken') {
-                document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', '#55697A');
+                document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', cellDefaultColor);
               }
             }
           }
@@ -633,31 +694,27 @@ export class GameboardComponent implements OnInit {
       var halfShipLength = Math.floor(shipSize/2);
       if(position === 'horizontal') {
         for(var i = 0; i < halfShipLength; i++) {
-          document.getElementById(id).setAttributeNS(null, 'fill', 'red');
-          document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', '#55697A');
-          document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', '#55697A');
+          document.getElementById(id).setAttributeNS(null, 'fill', hoverColor);
+          document.getElementById((Number(id) - ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', cellDefaultColor);
+          document.getElementById((Number(id) + ((i + 1) * 10)).toString()).setAttributeNS(null, 'fill', cellDefaultColor);
         }
       }
       else {
         for(var i = 0; i < halfShipLength; i++) {
-          document.getElementById(id).setAttributeNS(null, 'fill', 'red');
-          document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', '#55697A');
-          document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', '#55697A');
+          document.getElementById(id).setAttributeNS(null, 'fill', hoverColor);
+          document.getElementById((Number(id) - (i + 1)).toString()).setAttributeNS(null, 'fill', cellDefaultColor);
+          document.getElementById((Number(id) + (i + 1)).toString()).setAttributeNS(null, 'fill', cellDefaultColor);
         }
       }
     }
     catch(err) {
-
+      console.log("Failed to wipe board");
     }
   }
 
   setShips() {
     this.shipLocations.forEach((shipCell) => {
-      document.getElementById(shipCell).setAttributeNS(null, 'fill', '#87C540');
+      document.getElementById(shipCell).setAttributeNS(null, 'fill', shipColor);
     });
-  }
-
-  getOpposingPlayerBoard() {
-
   }
 }

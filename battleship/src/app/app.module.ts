@@ -1,11 +1,11 @@
 import { BrowserModule } from '@angular/platform-browser';
 import {FormsModule } from '@angular/forms'
 import { NgModule } from '@angular/core';
-
-
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './auth/auth.guard';
 import { HttpClientModule } from '@angular/common/http';
+import { NgxUiLoaderModule, NgxUiLoaderConfig } from  'ngx-ui-loader';
+
 
 // services
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -22,10 +22,39 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'lobby', component: LobbyComponent, canActivate: [AuthGuard] },
   { path: 'game', component: GameboardComponent, canActivate: [AuthGuard] },
-  { path: 'chat', component: ChatComponent },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login', pathMatch: 'full' }
 ]
+
+const ngxUiLoaderConfig: NgxUiLoaderConfig = {
+  "bgsColor": "red",
+  "bgsOpacity": 1,
+  "bgsPosition": "bottom-right",
+  "bgsSize": 60,
+  "bgsType": "three-strings",
+  "blur": 15,
+  "delay": 0,
+  "fgsColor": "#BEC2CB",
+  "fgsPosition": "center-center",
+  "fgsSize": 100,
+  "fgsType": "three-strings",
+  "gap": 12,
+  "logoPosition": "bottom-left",
+  "logoSize": 100,
+  "logoUrl": "../assets/images/battleshiplogo.png",
+  "masterLoaderId": "master",
+  "overlayBorderRadius": "0",
+  "overlayColor": "rgba(40,40,40,0.75)",
+  "pbColor": "red",
+  "pbDirection": "ltr",
+  "pbThickness": 4,
+  "hasProgressBar": false,
+  "text": "Loading...",
+  "textColor": "#BEC2CB",
+  "textPosition": "center-center",
+  "maxTime": -1,
+  "minTime": 500
+};
 
 @NgModule({
   declarations: [
@@ -38,6 +67,7 @@ const routes: Routes = [
   ],
   imports: [
     BrowserModule,
+    NgxUiLoaderModule.forRoot(ngxUiLoaderConfig),
     FormsModule,
     HttpClientModule,
     RouterModule.forRoot(
