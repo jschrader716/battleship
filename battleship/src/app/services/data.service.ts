@@ -101,7 +101,6 @@ export class DataService {
   deleteBoard(boardId): Promise<any> {
     return new Promise((resolve) => {
       this.http.delete(this.environment.apiUrl + '/game/board', { params: { id: boardId } }).subscribe((data) => {
-        console.log("DELETION DATA: ", data);
         resolve(data);
       });
     });

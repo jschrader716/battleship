@@ -114,10 +114,30 @@ export class AlertService {
     return new Promise((resolve) => {
       swalChallenge.fire(
         {
-          title: (didWin) ? 'Winner!' : "You Lost!",
+          title: (didWin) ? 'Winner!' : 'You Lost!',
           html: (didWin) ? "Congratulations! You have won this round of battleship!" : "Better luck next time!",
           icon: (didWin) ? 'success' : 'warning',
           confirmButtonText: 'Navigate Back to Lobby'
+        }
+      ).then((result) => {
+        resolve(result);
+      })
+      .catch((err) => {
+        console.log("Winner message failed");
+      })
+    });
+  }
+
+  quitters(): Promise<any> {
+    return new Promise((resolve) => {
+      swalChallenge.fire(
+        {
+          title: "Opponent Gave Up!",
+          html: "Congratulations! You have won this round of battleship!<br/>Navigating back to lobby...",
+          icon: 'warning',
+          timer: 5000,
+          timerProgressBar: true,
+          showConfirmButton: false,
         }
       ).then((result) => {
         resolve(result);

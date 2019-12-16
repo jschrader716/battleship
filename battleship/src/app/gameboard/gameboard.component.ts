@@ -46,6 +46,7 @@ export class GameboardComponent implements OnInit {
     private shipsPlaced: boolean = false;
     private shipLocations: string[] = [];
     private getBoard;
+    private checkUserAlive;
     private showTurnMessage: boolean = true;
     private showingWinMsg: boolean = false;
     private clientMissleTracker: any[] = [];
@@ -123,6 +124,20 @@ export class GameboardComponent implements OnInit {
 
               this.boardState = new BoardState(data[0]);
 
+              // checks user info to make sure opponent didn't quit
+              this.checkUserAlive = setInterval(() => {
+                this.dataService.getUser(this.playerUsername).then((userData) => {
+                  if(userData.length > 0) {
+                    if(userData[0].gameroom_id == 0) {
+                      clearInterval(this.checkUserAlive);
+                      this.alertService.quitters().then((data) => {
+                        this.router.navigate(['/lobby']);
+                      });
+                    }
+                  }
+                })
+              }, 3000);
+
               if(this.playerUsername === this.gameData.player_1 && this.boardState.turn == 1) {
                 this.playerTurn = true;
                 this.oppPlayerUsername = this.gameData.player_2;
@@ -163,9 +178,16 @@ export class GameboardComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    if (this.getBoard) {
+    if(this.getBoard) {
       clearInterval(this.getBoard);
     }
+
+    if(this.checkUserAlive) {
+      clearInterval(this.checkUserAlive);
+    }
+
+    // if this component is destroyed we can assume they navigated away from the game
+    this.destroyGame();
   }
 
   boardSetup(){
@@ -451,8 +473,6 @@ export class GameboardComponent implements OnInit {
   }
 
   updateGameInfoAndTurn(username) {
-    // document.getElementsByTagName('g')[0].innerHTML = "";
-    // this.resetBoard();
     this.dataService.getGameState(this.gameId).then((gameInfo) => {
       this.gameData = new ChallengeRecord(gameInfo[0]);
 
@@ -468,6 +488,7 @@ export class GameboardComponent implements OnInit {
       }
 
       this.dataService.getBoardState(boardInfo).then((boardData) => {
+        console.log("UPDATE GAME BOARD DATA: ", boardData)
         this.boardState = new BoardState(boardData[0]);
 
         // converting nodelist to array
@@ -541,7 +562,6 @@ export class GameboardComponent implements OnInit {
     return new Promise((resolve) => {
       var newBoardData = "";
       for(var i = 0; i < cellCoords.length; i++) {
-        console.log(cellCoords[i]);
         boardData[cellCoords[i]] = "1";
       }
       boardData.forEach(element => {
