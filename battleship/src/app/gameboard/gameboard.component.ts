@@ -289,7 +289,7 @@ export class GameboardComponent implements OnInit {
 
     var boardArr = this.boardState.board_state.split("");
     // check for different values to determine fill
-    var cellValue = boardArr[Number(cell.getAttributeNS(null, 'id') - 1)];
+    var cellValue = boardArr[Number(cell.getAttributeNS(null, 'id'))];
     switch(cellValue) {
       case '1':
         cell.setAttributeNS(null, 'fill', shipColor);
