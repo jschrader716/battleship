@@ -47,8 +47,10 @@ export class GameboardComponent implements OnInit {
     private shipLocations: string[] = [];
     private getBoard;
     private showTurnMessage: boolean = true;
+    private clientMissleTracker: any[] = [];
     public playerUsername: string = "";
     public oppPlayerUsername: string = "";
+
 
   constructor(private authService: AuthService,
     private router: Router,
@@ -166,11 +168,6 @@ export class GameboardComponent implements OnInit {
     document.getElementsByTagName('svg')[0].appendChild(game);
 
     this.resetBoard();
-
-    // update board after setup
-    this.getBoard = setInterval(() => {
-      this.updateGameInfoAndTurn(this.playerUsername);
-    }, 2000);
   }
 
   resetBoard() {
@@ -224,6 +221,11 @@ export class GameboardComponent implements OnInit {
                   this.prepareBoard(this.shipLocations).then((data) => {
                     this.setShips();
 
+                    // update board after setup
+                    this.getBoard = setInterval(() => {
+                      this.updateGameInfoAndTurn(this.playerUsername);
+                    }, 2000);
+
                     if(this.playerTurn === true) {
                       this.alertService.success("Your turn");
                     }
@@ -236,7 +238,8 @@ export class GameboardComponent implements OnInit {
               this.updateGameInfoAndTurn(this.playerUsername);
               if(this.playerTurn === true) {
                 this.fireMissile(cell.getAttributeNS(null, 'id')).then((data) => {
-                  if(data === "HIT") {
+                  if(data.result === "HIT") {
+                    this.clientMissleTracker.push({ id: data.id, result: 1 });
                     // tell client we hit
                     this.alertService.toastHit(true);
                     var explosion = document.createElementNS(this.svgns, 'image');
@@ -249,6 +252,7 @@ export class GameboardComponent implements OnInit {
                   }
                   else {
                     // tell client we missed
+                    this.clientMissleTracker.push({ id: data.id, result: 0 });
                     this.alertService.toastHit(false);
                     var whiff = document.createElementNS(this.svgns, 'image');
                     whiff.setAttributeNS(null, 'href', '../../assets/images/smoke.png');
@@ -278,6 +282,11 @@ export class GameboardComponent implements OnInit {
   }
 
   determineFill(cell) {
+
+    this.clientMissleTracker.forEach((element) => {
+      
+    });
+
     var boardArr = this.boardState.board_state.split("");
     // check for different values to determine fill
     var cellValue = boardArr[Number(cell.getAttributeNS(null, 'id') - 1)];
@@ -307,9 +316,6 @@ export class GameboardComponent implements OnInit {
         }
         break;
       default:
-        if(null) {
-
-        }
         cell.setAttributeNS(null, 'fill', cellDefaultColor);
     }
   }
@@ -421,8 +427,8 @@ export class GameboardComponent implements OnInit {
   }
 
   updateGameInfoAndTurn(username) {
-    // document.getElementsByTagName('g')[0].innerHTML = "";
-    // this.resetBoard();
+    document.getElementsByTagName('g')[0].innerHTML = "";
+    this.resetBoard();
     this.dataService.getGameState(this.gameId).then((gameInfo) => {
       this.gameData = new ChallengeRecord(gameInfo[0]);
 

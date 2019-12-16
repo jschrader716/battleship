@@ -42,6 +42,7 @@ export class LobbyComponent implements OnInit {
     });
 
     this.cognitoService.getCurrentUser().then((data) => {
+      console.log(data);
       this.user = data.username;
 
       this.checkChallengeResponse = setInterval(() => {

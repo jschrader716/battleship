@@ -23,7 +23,6 @@ export class LoginComponent implements OnInit {
 
   login(creds) {
     this.authService.login(creds).then((data) => {
-
       var user = {
         username: data.accessToken.payload.username,
         login: true,
@@ -34,7 +33,7 @@ export class LoginComponent implements OnInit {
 
       this.dataService.updateUser(user).then((data) => {
         this.router.navigate(['/lobby']);
-      })
+      });
     })
     .catch((error) => {
       this.alertService.error("Error: " + error.message);
@@ -43,8 +42,8 @@ export class LoginComponent implements OnInit {
 
   register(creds) {
     this.authService.register(creds).then((data) => {
-      this.alertService.success("Registration Successful!");
-      this.router.navigate(['/lobby']);
+      this.alertService.success("Registration Successful! Please Log In!");
+      this.signup = false;
     })
     .catch((error) => {
       this.alertService.error("Error: " + error.message);
