@@ -2,6 +2,9 @@
     <div class="game-header">
         <h1>Battleship</h1>
         <h3>{{ playerUsername | uppercase }} vs. {{ oppPlayerUsername | uppercase}}</h3>
+        <div>
+            <p class="player-turn"><span>{{ ((playerTurn) ? playerUsername : oppPlayerUsername) | titlecase }}'s</span> Turn</p>
+        </div>
     </div>
     <div class="game-wrapper">
         <div class="game-board-wrapper">

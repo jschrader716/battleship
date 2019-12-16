@@ -1,6 +1,11 @@
 .page-content {
     position: relative;
 
+    .player-turn {
+        color: red;
+        font-weight: bold;
+    }
+
 
     .game-header {
         text-align: center;

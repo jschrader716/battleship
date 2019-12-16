@@ -16,21 +16,6 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot): boolean {
     var url: string = state.url;
 
-    // check if user is authenticated
-    // blocks user from gaining access to game component if not in an active game
-    if(this.checkLogin(url)) {
-      this.cognitoService.getCurrentUser().then((user) => {
-        var username =  user.username;
-        this.dataService.getUser(username).then((userData) => {
-          if(userData[0].gameroom_id != 0) {
-            return true;
-          }
-          else {
-            this.router.navigate(['/lobby']);
-          }
-        });
-      }) 
-    }
     return this.checkLogin(url);
   }
 
@@ -40,6 +25,7 @@ export class AuthGuard implements CanActivate {
     }
     else {
       this.router.navigate(['/login']);
+      return false;
     }
   }
 }

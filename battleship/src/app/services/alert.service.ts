@@ -28,6 +28,21 @@ export class AlertService {
     this.swal.fire(successMsg);
   }
 
+  registrationSuccess() {
+    this.swal.fire(
+      {
+        title: "Registration Successful!",
+        html: "Please Log In!",
+        icon: 'success',
+        showCancelButton: false,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        reverseButtons: true,
+      }
+    );
+  }
+
   disgustingBrowser() {
     this.swal.fire(
       {

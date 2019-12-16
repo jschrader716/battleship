@@ -47,6 +47,7 @@ export class GameboardComponent implements OnInit {
     private shipLocations: string[] = [];
     private getBoard;
     private showTurnMessage: boolean = true;
+    private showingWinMsg: boolean = false;
     private clientMissleTracker: any[] = [];
     public playerUsername: string = "";
     public oppPlayerUsername: string = "";
@@ -75,6 +76,17 @@ export class GameboardComponent implements OnInit {
     this.authService.isAuthenticated().then((data) => {
       if(data === true) {
         this.ngxService.start();
+        this.cognitoService.getCurrentUser().then((user) => {
+          var username =  user.username;
+          this.dataService.getUser(username).then((userData) => {
+            if(userData[0].gameroom_id == 0) {
+              this.router.navigate(['/lobby']);
+            }
+          });
+        });
+      }
+      else {
+        this.router.navigate(['/lobby']);
       } 
       this.shipSize = this.shipSizeList[0];
 
@@ -126,9 +138,11 @@ export class GameboardComponent implements OnInit {
               }
               this.boardSetup();
               // after initial board setup, tell players to set their pieces
-              setTimeout(() => {
-                this.alertService.setShipsAlert();
-              }, 1000);
+              if(!this.shipsPlaced) {
+                setTimeout(() => {
+                  this.alertService.setShipsAlert();
+                }, 1000);
+              }
             })
             .catch((err) =>{
               console.log("Failure to retreive board state")
@@ -235,11 +249,14 @@ export class GameboardComponent implements OnInit {
             }
             else {
               // ships are placed, updated board state, and turn identified
-              this.updateGameInfoAndTurn(this.playerUsername);
+              this.getBoard = setInterval(() => {
+                this.updateGameInfoAndTurn(this.playerUsername);
+              }, 2000);
               if(this.playerTurn === true) {
                 this.fireMissile(cell.getAttributeNS(null, 'id')).then((data) => {
                   if(data.result === "HIT") {
                     this.clientMissleTracker.push({ id: data.id, result: 1 });
+                    console.log(this.clientMissleTracker);
                     // tell client we hit
                     this.alertService.toastHit(true);
                     var explosion = document.createElementNS(this.svgns, 'image');
@@ -283,10 +300,6 @@ export class GameboardComponent implements OnInit {
 
   determineFill(cell) {
 
-    this.clientMissleTracker.forEach((element) => {
-      
-    });
-
     var boardArr = this.boardState.board_state.split("");
     // check for different values to determine fill
     var cellValue = boardArr[Number(cell.getAttributeNS(null, 'id'))];
@@ -328,21 +341,26 @@ export class GameboardComponent implements OnInit {
 
         // are we player 1?
         if(this.playerUsername === this.gameData.player_1) {
-          
-          this.alertService.playerWins(true).then((data) => {
-            // destroy game
-            this.destroyGame().then((data) => {
-              // navigate back to lobby
-              if(data != null && data != undefined) {
-                this.router.navigate(['/lobby']);
-              }
+          if(!this.showingWinMsg) {
+            this.showingWinMsg = true;
+            this.alertService.playerWins(true).then((data) => {
+              // destroy game
+              this.destroyGame().then((data) => {
+                // navigate back to lobby
+                if(data != null && data != undefined) {
+                  this.router.navigate(['/lobby']);
+                }
+              });
             });
-          });
+          }
         }
         else {
-          this.alertService.playerWins(false).then((data) => {
-            this.router.navigate(['/lobby']);
-          });
+          if(!this.showingWinMsg) {
+            this.showingWinMsg = true;
+            this.alertService.playerWins(false).then((data) => {
+              this.router.navigate(['/lobby']);
+            });
+          }
         }
       }
       else {
@@ -350,20 +368,26 @@ export class GameboardComponent implements OnInit {
 
         // are we player 2?
         if(this.playerUsername === this.gameData.player_2) {
-          this.alertService.playerWins(true).then((data) => {
-            // destroy game
-            this.destroyGame().then((data) => {
-              // navigate back to lobby
-              if(data != null && data != undefined) {
-                this.router.navigate(['/lobby']);
-              }
+          if(this.showingWinMsg) {
+            this.showingWinMsg = true;
+            this.alertService.playerWins(true).then((data) => {
+              // destroy game
+              this.destroyGame().then((data) => {
+                // navigate back to lobby
+                if(data != null && data != undefined) {
+                  this.router.navigate(['/lobby']);
+                }
+              });
             });
-          });
+          }
         }
         else {
-          this.alertService.playerWins(false).then((data) => {
-            this.router.navigate(['/lobby']);
-          });
+          if(this.showingWinMsg) {
+            this.showingWinMsg = true;
+            this.alertService.playerWins(false).then((data) => {
+              this.router.navigate(['/lobby']);
+            });
+          }
         }
       }
     }
@@ -427,8 +451,8 @@ export class GameboardComponent implements OnInit {
   }
 
   updateGameInfoAndTurn(username) {
-    document.getElementsByTagName('g')[0].innerHTML = "";
-    this.resetBoard();
+    // document.getElementsByTagName('g')[0].innerHTML = "";
+    // this.resetBoard();
     this.dataService.getGameState(this.gameId).then((gameInfo) => {
       this.gameData = new ChallengeRecord(gameInfo[0]);
 

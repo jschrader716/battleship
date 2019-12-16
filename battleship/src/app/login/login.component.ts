@@ -42,7 +42,7 @@ export class LoginComponent implements OnInit {
 
   register(creds) {
     this.authService.register(creds).then((data) => {
-      this.alertService.success("Registration Successful! Please Log In!");
+      this.alertService.registrationSuccess();
       this.signup = false;
     })
     .catch((error) => {
