@@ -15,7 +15,6 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { LobbyComponent } from './lobby/lobby.component';
 import { GameboardComponent } from './gameboard/gameboard.component';
-import { CellComponent } from './cell/cell.component';
 import { ChatComponent } from './chat/chat.component';
 
 const routes: Routes = [
@@ -26,6 +25,7 @@ const routes: Routes = [
   { path: '**', redirectTo: '/login', pathMatch: 'full' }
 ]
 
+// configuration for global loader across app
 const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   "bgsColor": "red",
   "bgsOpacity": 1,
@@ -62,7 +62,6 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     LoginComponent,
     LobbyComponent,
     GameboardComponent,
-    CellComponent,
     ChatComponent
   ],
   imports: [

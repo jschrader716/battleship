@@ -8,10 +8,16 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <script>
-  // // for any degenerates using IE to play battleship
-  // if (navigator.userAgent.search("MSIE")) {
-  //     window.location.href = "https://browsehappy.com/";
-  // }
+
+  if (navigator.userAgent.search("MSIE")) {
+    console.log("ie");
+    // window.location.href = "https://browsehappy.com/";
+  }
+
+  if (navigator.userAgent.search("MSIE")) {
+    //console.log("");
+    //window.location.href = "https://browsehappy.com/";
+  }
 </script>
 <body>
   <app-root></app-root>
