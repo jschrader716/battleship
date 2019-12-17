@@ -147,7 +147,7 @@ export class GameboardComponent implements OnInit {
               }
               this.ngxService.stop();
 
-              if(this.boardState.board_state.split("").includes('1')) {
+              if(this.boardState.board_state.split("").includes('1') || this.boardState.board_state.split("").includes('2') || this.boardState.board_state.split("").includes('3')) {
                 this.shipsPlaced = true;
                 this.highLight = false;
               }
@@ -271,9 +271,11 @@ export class GameboardComponent implements OnInit {
             }
             else {
               // ships are placed, updated board state, and turn identified
-              this.getBoard = setInterval(() => {
-                this.updateGameInfoAndTurn(this.playerUsername);
-              }, 2000);
+              if(!this.getBoard){
+                this.getBoard = setInterval(() => {
+                  this.updateGameInfoAndTurn(this.playerUsername);
+                }, 2000);
+              }
               if(this.playerTurn === true) {
                 this.fireMissile(cell.getAttributeNS(null, 'id')).then((data) => {
                   if(data.result === "HIT") {
@@ -356,15 +358,17 @@ export class GameboardComponent implements OnInit {
   }
 
   checkWinCondition() {
-    if(this.boardState.game_terminated != null && this.boardState.game_terminated != undefined) {
+    console.log("Checking win condition!");
+    if(this.boardState.game_terminated) {
+      clearInterval(this.getBoard);
       if(this.boardState.game_terminated == 1) {
-        clearInterval(this.getBoard);
         // only one person has to destroy the game
-
         // are we player 1?
+        console.log("PLAYER ONE WON THE GAME!");
         if(this.playerUsername === this.gameData.player_1) {
           if(!this.showingWinMsg) {
             this.showingWinMsg = true;
+            console.log("WE WON!");
             this.alertService.playerWins(true).then((data) => {
               // destroy game
               this.destroyGame().then((data) => {
@@ -378,19 +382,26 @@ export class GameboardComponent implements OnInit {
         }
         else {
           if(!this.showingWinMsg) {
+            console.log("WE LOST THE GAME!");
             this.showingWinMsg = true;
             this.alertService.playerWins(false).then((data) => {
+              var newUserData = {
+                login: true,
+                username: this.playerUsername,
+                gameroom_id: 0
+              }
+              this.dataService.updateUser(newUserData).then(() => {});
               this.router.navigate(['/lobby']);
             });
           }
         }
       }
       else {
-        clearInterval(this.getBoard);
-
         // are we player 2?
+        console.log("PLAYER TWO WON THE GAME!");
         if(this.playerUsername === this.gameData.player_2) {
-          if(this.showingWinMsg) {
+          if(!this.showingWinMsg) {
+            console.log("WE WON THE GAME!");
             this.showingWinMsg = true;
             this.alertService.playerWins(true).then((data) => {
               // destroy game
@@ -404,9 +415,16 @@ export class GameboardComponent implements OnInit {
           }
         }
         else {
-          if(this.showingWinMsg) {
+          if(!this.showingWinMsg) {
+            console.log("WE LOST THE GAME!");
             this.showingWinMsg = true;
             this.alertService.playerWins(false).then((data) => {
+              var newUserData = {
+                login: true,
+                username: this.playerUsername,
+                gameroom_id: 0
+              }
+              this.dataService.updateUser(newUserData).then(() => {});
               this.router.navigate(['/lobby']);
             });
           }
@@ -503,7 +521,7 @@ export class GameboardComponent implements OnInit {
         // check win status
         this.checkWinCondition();
 
-        if((username == this.gameData.player_1 && this.boardState.turn == 1) || (username == this.gameData.player_2 && this.boardState.turn == 2)) {
+        if((username == this.gameData.player_1 && this.boardState.turn == 1) || (username == this.gameData.player_2 && this.boardState.turn == 2) && !this.boardState.game_terminated) {
           if(this.showTurnMessage) {
             this.alertService.success("Your Turn");
           }
@@ -572,13 +590,15 @@ export class GameboardComponent implements OnInit {
   }
 
   highlightShipArea(event) {
-    var cell = document.getElementById(event.path[0].id);
+    var path = event.path || (event.composedPath && event.composedPath());
+    var cell = document.getElementById(path[0].id);
     this.hoverId = cell.getAttributeNS(null, 'id');
     this.showShipPlacement(cell.getAttributeNS(null, 'id'), this.shipSize, true);
   }
 
   hideShipArea(event) {
-    var cell = document.getElementById(event.path[0].id);
+    var path = event.path || (event.composedPath && event.composedPath());
+    var cell = document.getElementById(path[0].id);
     this.showShipPlacement(cell.getAttributeNS(null, 'id'), this.shipSize, false);
   }
 

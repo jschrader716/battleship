@@ -11,27 +11,6 @@ import { filter } from "rxjs/operators";
 export class AppComponent {
   title = 'battleship';
 
-  constructor(router: Router) {
-
-    router.events.pipe(
-      filter(
-        ( event: NavigationEvent ) => {
-
-            return( event instanceof NavigationStart );
-
-        }
-      )
-    ).subscribe((event: NavigationStart) => {
-      if ( event.restoredState ) {
-
-        // console.log( "navigation id:", event.id );
-        // console.log( "route:", event.url );
-        // console.warn(
-        //     "restoring navigation id:",
-        //     event.restoredState.navigationId
-        // );
-      }
-    })
-  }
+  constructor(router: Router) {}
 }
 

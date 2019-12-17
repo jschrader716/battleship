@@ -37,28 +37,34 @@ export class LobbyComponent implements OnInit {
         this.cognitoService.getCurrentUser().then((data) => {
           console.log(data);
           this.user = data.username;
-    
-          this.checkChallengeResponse = setInterval(() => {
-            this.dataService.getChallengeResponses(this.user).then((gameDataStart: any) => {
-              // someone somewhere in the world must have accepted the game
-    
-              if(gameDataStart.length > 0) {
-                var newUserData = {
-                  username: this.user,
-                  login: true,
-                  gameroom_id: gameDataStart[0].id
+
+          var setUserToLobby = {
+            login: true,
+            username: this.user,
+            gameroom_id: 0
+          }
+          this.dataService.updateUser(setUserToLobby).then(() => {
+            this.checkChallengeResponse = setInterval(() => {
+              this.dataService.getChallengeResponses(this.user).then((gameDataStart: any) => {
+                // someone somewhere in the world must have accepted the game
+                if(gameDataStart.length > 0) {
+                  var newUserData = {
+                    username: this.user,
+                    login: true,
+                    gameroom_id: gameDataStart[0].id
+                  }
+      
+                  this.dataService.updateUser(newUserData).then(() => {
+                    this.router.navigate(['/game'], {
+                      // forgive my crappy attempt to obfuscate some data from the user hahaha
+                      queryParams: { flim: gameDataStart[0].id }
+                    });
+                  })
                 }
-    
-                this.dataService.updateUser(newUserData).then(() => {
-                  this.router.navigate(['/game'], {
-                    // forgive my crappy attempt to obfuscate some data from the user hahaha
-                    queryParams: { flim: gameDataStart[0].id }
-                  });
-                })
-              }
-            });
-          }, 2000);
-    
+              });
+            }, 2000);
+          });
+  
           setTimeout(() => {
             this.ngxService.stop();
           }, 2000);

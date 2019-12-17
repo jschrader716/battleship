@@ -37,7 +37,6 @@ export class AlertService {
         showCancelButton: false,
         showConfirmButton: false,
         timer: 3000,
-        timerProgressBar: true,
         reverseButtons: true,
       }
     );
@@ -82,7 +81,6 @@ export class AlertService {
               toast: true,
               icon: 'success',
               timer: 2000,
-              timerProgressBar: true,
               showConfirmButton: false,
               position: 'bottom-end'
             }
@@ -96,7 +94,6 @@ export class AlertService {
               toast: true,
               icon: 'error',
               timer: 2000,
-              timerProgressBar: true,
               showConfirmButton: false,
               position: 'bottom-end'
             }
@@ -117,7 +114,8 @@ export class AlertService {
           title: (didWin) ? 'Winner!' : 'You Lost!',
           html: (didWin) ? "Congratulations! You have won this round of battleship!" : "Better luck next time!",
           icon: (didWin) ? 'success' : 'warning',
-          confirmButtonText: 'Navigate Back to Lobby'
+          confirmButtonText: 'Navigate Back to Lobby',
+          allowOutsideClick: false
         }
       ).then((result) => {
         resolve(result);
@@ -136,8 +134,8 @@ export class AlertService {
           html: "Congratulations! You have won this round of battleship!<br/>Navigating back to lobby...",
           icon: 'warning',
           timer: 5000,
-          timerProgressBar: true,
           showConfirmButton: false,
+          allowOutsideClick: false
         }
       ).then((result) => {
         resolve(result);
@@ -165,7 +163,6 @@ export class AlertService {
         toast: true,
         icon: 'success',
         timer: 5000,
-        timerProgressBar: true,
         showConfirmButton: false,
         position: 'bottom-end'
       }
@@ -179,7 +176,6 @@ export class AlertService {
         toast: true,
         icon: (hit) ? 'success' : 'warning',
         timer: 1500,
-        timerProgressBar: true,
         showConfirmButton: false,
         position: 'center'
       }
@@ -193,7 +189,6 @@ export class AlertService {
         toast: true,
         icon: 'error',
         timer: 5000,
-        timerProgressBar: true,
         showConfirmButton: false,
         position: 'bottom-end'
       }
