@@ -131,7 +131,7 @@ export class AlertService {
       swalChallenge.fire(
         {
           title: "Opponent Gave Up!",
-          html: "Congratulations! You have won this round of battleship!<br/>Navigating back to lobby...",
+          html: "Navigating back to lobby...",
           icon: 'warning',
           timer: 5000,
           showConfirmButton: false,

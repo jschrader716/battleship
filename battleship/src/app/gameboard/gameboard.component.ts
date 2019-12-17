@@ -47,6 +47,7 @@ export class GameboardComponent implements OnInit {
     private shipLocations: string[] = [];
     private getBoard;
     private checkUserAlive;
+    private backToLobby: boolean = true;
     private showTurnMessage: boolean = true;
     private showingWinMsg: boolean = false;
     private clientMissleTracker: any[] = [];
@@ -82,6 +83,95 @@ export class GameboardComponent implements OnInit {
           this.dataService.getUser(username).then((userData) => {
             if(userData[0].gameroom_id == 0) {
               this.router.navigate(['/lobby']);
+              return;
+            }
+            else {
+              this.backToLobby = false;
+              this.shipSize = this.shipSizeList[0];
+
+              document.addEventListener('keypress', (keypress) => {
+                if(keypress.keyCode == 114) {
+                  (this.position === 'horizontal') ? this.position = 'vertical' : this.position = 'horizontal'; 
+                  
+                  this.wipeHoverShip(this.hoverId, this.position, this.shipSize);
+                  this.showShipPlacement(this.hoverId, this.shipSize, true);
+                }
+              });
+        
+              this.cognitoService.getCurrentUser().then((data) => {
+                this.playerUsername = data.username;
+                this.route.queryParams.subscribe(params => {
+                  this.gameId = params.flim;
+        
+                  this.dataService.getGameState(this.gameId).then((data) => {
+                    this.gameData = new ChallengeRecord(data[0]);
+                    this.boardId = this.gameData.board_id;
+        
+                    var boardInfo = {
+                      "id" : this.boardId
+                    }
+            
+                    if(this.playerUsername === this.gameData.player_1) {
+                      boardInfo['player'] = 1;
+                    }
+                    else {
+                      boardInfo['player'] = 2;
+                    }
+        
+                    this.dataService.getBoardState(boardInfo).then((data) => {
+        
+                      this.boardState = new BoardState(data[0]);
+        
+                      // checks user info to make sure opponent didn't quit
+                      this.checkUserAlive = setInterval(() => {
+                        this.dataService.getUser(this.playerUsername).then((userData) => {
+                          if(userData.length > 0) {
+                            if(userData[0].gameroom_id == 0) {
+                              clearInterval(this.checkUserAlive);
+                              this.alertService.quitters().then((data) => {
+                                this.router.navigate(['/lobby']);
+                              });
+                            }
+                          }
+                        })
+                      }, 3000);
+        
+                      if(this.playerUsername === this.gameData.player_1 && this.boardState.turn == 1) {
+                        this.playerTurn = true;
+                        this.oppPlayerUsername = this.gameData.player_2;
+                      }
+                      else {
+                        this.oppPlayerUsername = this.gameData.player_1;
+                      }
+                      this.ngxService.stop();
+        
+                      if(this.boardState.board_state.split("").includes('1') || this.boardState.board_state.split("").includes('2') || this.boardState.board_state.split("").includes('3')) {
+                        this.shipsPlaced = true;
+                        this.highLight = false;
+                      }
+                      this.boardSetup();
+                      // after initial board setup, tell players to set their pieces
+                      if(!this.shipsPlaced) {
+                        setTimeout(() => {
+                          this.alertService.setShipsAlert();
+                        }, 1000);
+                      }
+                    })
+                    .catch((err) =>{
+                      console.log("Failure to retreive board state")
+                    });
+                  })
+                  .catch((err) => {
+                    console.log("Failure to retreive game state");
+                  });
+                }, 
+                (err) => {
+                  console.log("Failed to fill parameters in route");
+                });
+              })
+              .catch((err) => {
+                console.log("Failed to retrieve user info");
+              })
             }
           });
         });
@@ -89,91 +179,6 @@ export class GameboardComponent implements OnInit {
       else {
         this.router.navigate(['/lobby']);
       } 
-      this.shipSize = this.shipSizeList[0];
-
-      document.addEventListener('keypress', (keypress) => {
-        if(keypress.keyCode == 114) {
-          (this.position === 'horizontal') ? this.position = 'vertical' : this.position = 'horizontal'; 
-          
-          this.wipeHoverShip(this.hoverId, this.position, this.shipSize);
-          this.showShipPlacement(this.hoverId, this.shipSize, true);
-        }
-      });
-
-      this.cognitoService.getCurrentUser().then((data) => {
-        this.playerUsername = data.username;
-        this.route.queryParams.subscribe(params => {
-          this.gameId = params.flim;
-
-          this.dataService.getGameState(this.gameId).then((data) => {
-            this.gameData = new ChallengeRecord(data[0]);
-            this.boardId = this.gameData.board_id;
-
-            var boardInfo = {
-              "id" : this.boardId
-            }
-    
-            if(this.playerUsername === this.gameData.player_1) {
-              boardInfo['player'] = 1;
-            }
-            else {
-              boardInfo['player'] = 2;
-            }
-
-            this.dataService.getBoardState(boardInfo).then((data) => {
-
-              this.boardState = new BoardState(data[0]);
-
-              // checks user info to make sure opponent didn't quit
-              this.checkUserAlive = setInterval(() => {
-                this.dataService.getUser(this.playerUsername).then((userData) => {
-                  if(userData.length > 0) {
-                    if(userData[0].gameroom_id == 0) {
-                      clearInterval(this.checkUserAlive);
-                      this.alertService.quitters().then((data) => {
-                        this.router.navigate(['/lobby']);
-                      });
-                    }
-                  }
-                })
-              }, 3000);
-
-              if(this.playerUsername === this.gameData.player_1 && this.boardState.turn == 1) {
-                this.playerTurn = true;
-                this.oppPlayerUsername = this.gameData.player_2;
-              }
-              else {
-                this.oppPlayerUsername = this.gameData.player_1;
-              }
-              this.ngxService.stop();
-
-              if(this.boardState.board_state.split("").includes('1') || this.boardState.board_state.split("").includes('2') || this.boardState.board_state.split("").includes('3')) {
-                this.shipsPlaced = true;
-                this.highLight = false;
-              }
-              this.boardSetup();
-              // after initial board setup, tell players to set their pieces
-              if(!this.shipsPlaced) {
-                setTimeout(() => {
-                  this.alertService.setShipsAlert();
-                }, 1000);
-              }
-            })
-            .catch((err) =>{
-              console.log("Failure to retreive board state")
-            });
-          })
-          .catch((err) => {
-            console.log("Failure to retreive game state");
-          });
-        }, 
-        (err) => {
-          console.log("Failed to fill parameters in route");
-        });
-      })
-      .catch((err) => {
-        console.log("Failed to retrieve user info");
-      })
     });
   }
 
@@ -187,7 +192,9 @@ export class GameboardComponent implements OnInit {
     }
 
     // if this component is destroyed we can assume they navigated away from the game
-    this.destroyGame();
+    if(!this.backToLobby) {
+      this.destroyGame();
+    }
   }
 
   boardSetup(){
