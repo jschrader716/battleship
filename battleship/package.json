@@ -22,7 +22,7 @@
     "@auth0/angular-jwt": "^3.0.1",
     "@sweetalert2/ngx-sweetalert2": "^7.0.0",
     "amazon-cognito-identity-js": "^3.2.0",
-    "aws-sdk": "^2.563.0",
+    "aws-sdk": "^2.814.0",
     "jsonwebtoken": "^8.5.1",
     "jwthelper": "0.0.4",
     "ngx-ui-loader": "^8.0.0",
